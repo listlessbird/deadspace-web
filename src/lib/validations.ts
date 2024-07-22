@@ -19,3 +19,7 @@ export const signInSchema = z.object({
 })
 
 export type SignInInput = z.infer<typeof signInSchema>
+
+export const createPostSchema = z.object({
+  content: requiredString,
+})
