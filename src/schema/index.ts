@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp } from "drizzle-orm/pg-core"
+import { pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core"
 
 export const userTable = pgTable("user", {
   id: text("id").primaryKey(),
@@ -25,4 +25,15 @@ export const sessionTable = pgTable("session", {
   }).notNull(),
 })
 
-export const schema = { userTable, sessionTable }
+export const postTable = pgTable("posts", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  content: text("content"),
+  userId: text("user_id")
+    .references(() => userTable.id)
+    .notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
+    .notNull()
+    .defaultNow(),
+})
+
+export const schema = { userTable, sessionTable, postTable }
