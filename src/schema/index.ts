@@ -1,3 +1,5 @@
+import { db } from "@/db"
+import { eq } from "drizzle-orm"
 import { pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core"
 
 export const userTable = pgTable("user", {
@@ -35,5 +37,7 @@ export const postTable = pgTable("posts", {
     .notNull()
     .defaultNow(),
 })
+
+export type BasePostType = typeof postTable.$inferSelect
 
 export const schema = { userTable, sessionTable, postTable }
