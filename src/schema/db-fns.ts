@@ -47,7 +47,9 @@ export type UserDisplayType = Awaited<
   ReturnType<typeof getUsersToFollow>
 >[number]
 
-export async function getTrendingTags() {
+export async function getTrendingTags(): Promise<
+  { tag: string; count: number }[]
+> {
   const query = sql<{ tag: string; count: bigint }[]>`
            SELECT
               LOWER(
@@ -64,7 +66,10 @@ export async function getTrendingTags() {
             LIMIT
               5
         `
-  const result = await db.execute(query)
+  const result = (await db.execute(query)) as unknown as {
+    tag: string
+    count: bigint
+  }[]
 
   return result.map((row) => ({
     tag: row.tag,
