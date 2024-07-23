@@ -30,6 +30,27 @@ export async function getPostsByUser(userId: string) {
   return posts
 }
 
+export async function getPostsWithUsers() {
+  const posts = await db
+    .select(postInclude)
+    .from(postTable)
+    .innerJoin(userTable, eq(postTable.userId, userTable.id))
+    .orderBy(desc(postTable.createdAt))
+
+  return posts
+}
+
+export async function getPosts() {
+  const posts = await db
+    .select()
+    .from(postTable)
+    .orderBy(desc(postTable.createdAt))
+
+  return posts
+}
+
+export type PostType = Awaited<ReturnType<typeof getPosts>>[number]
+
 export type PostWithUsers = Awaited<ReturnType<typeof getPostsByUser>>[number]
 
 export async function getUsersToFollow(currUserId: string) {
