@@ -26,6 +26,7 @@ export function Post({ post }: PostProps) {
             className="block text-sm text-muted-foreground hover:underline"
           >
             {getRelativeDate(post.createdAt)}
+            {/* {post.createdAt} */}
           </Link>
         </div>
       </div>
