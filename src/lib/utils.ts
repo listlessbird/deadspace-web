@@ -8,15 +8,15 @@ export function cn(...inputs: ClassValue[]) {
 
 export function getRelativeDate(from: Date) {
   const current = new Date()
-
+  // from = new Date(from)
   const delta = current.getTime() - from.getTime()
 
   if (delta < 24 * 60 * 60 * 1000) {
     return formatDistanceToNowStrict(from, { addSuffix: true })
   } else if (current.getFullYear() === from.getFullYear()) {
-    return formatDate(from, "dd MM")
+    return formatDate(from, "dd/MM/yyyy")
   } else {
-    return formatDate(from, "dd MM, yyyy")
+    return formatDate(from, "dd / MM / yyyy")
   }
 }
 
