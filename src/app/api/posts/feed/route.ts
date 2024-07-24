@@ -1,11 +1,11 @@
 import { validateRequest } from "@/auth"
 import { db } from "@/db"
 import { schema } from "@/schema"
-import { getPostsWithUsers } from "@/schema/db-fns"
+import { getPaginatedPosts, getPostsWithUsers } from "@/schema/db-fns"
 import { desc } from "drizzle-orm"
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     const { user } = await validateRequest()
 
@@ -13,9 +13,12 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const posts = await getPostsWithUsers()
+    const cursor = req.nextUrl.searchParams.get("c") || undefined
+    const perPage = 10
 
-    return NextResponse.json(posts)
+    const paginatedPosts = await getPaginatedPosts(cursor, perPage)
+
+    return NextResponse.json(paginatedPosts)
   } catch (error) {
     console.error(error)
     return NextResponse.json(
