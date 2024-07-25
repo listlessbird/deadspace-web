@@ -2,6 +2,7 @@
 
 import { Post } from "@/app/(main)/_components/posts/post"
 import { useInfinitePosts, usePosts } from "@/app/(main)/hooks/queries"
+import PostsSkelton from "@/components/skeletons/posts"
 import { Button } from "@/components/ui/button"
 import { InfiniteScrollWrapper } from "@/components/ui/infinite-scroll-wrapper"
 import { Loader2 } from "lucide-react"
@@ -19,7 +20,11 @@ export function Feed() {
   const posts = data?.pages.flatMap((page) => page.data) || []
 
   if (status === "pending") {
-    return <Loader2 className="mx-auto animate-spin" />
+    return <PostsSkelton />
+  }
+
+  if (status === "success" && !posts.length && !hasNextPage) {
+    return <p className="text-center text-muted-foreground"> So empty </p>
   }
 
   if (status === "error") {
