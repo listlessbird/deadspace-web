@@ -9,10 +9,15 @@ import { useSession } from "@/app/(main)/hooks/useSession"
 import { UserAvatar } from "@/components/ui/user-avatar"
 import { Button } from "@/components/ui/button"
 import "./styles.css"
+import { useOnPostSubmit } from "@/app/(main)/_components/posts/editor/mutation"
+import { LoadingButton } from "@/components/ui/loading-button"
 
 export function PostEditor() {
+  const mutation = useOnPostSubmit()
+
   const { user } = useSession()
   const editor = useEditor({
+    immediatelyRender: false,
     extensions: [
       StarterKit.configure({
         bold: false,
@@ -32,9 +37,13 @@ export function PostEditor() {
 
   const onSubmitPost = useCallback(async () => {
     console.log({ input })
-    await submitPost(input)
-    editor?.commands.clearContent()
-  }, [input, editor])
+    // await submitPost(input)
+    mutation.mutate(input, {
+      onSuccess: () => {
+        editor?.commands.clearContent()
+      },
+    })
+  }, [input, editor, mutation])
 
   return (
     <div className="flex flex-col gap-5 rounded-2xl bg-card p-5 shadow-sm">
@@ -46,13 +55,14 @@ export function PostEditor() {
         />
       </div>
       <div className="flex justify-end">
-        <Button
+        <LoadingButton
+          loading={mutation.isPending}
           disabled={!input.trim()}
           onClick={onSubmitPost}
           className="min-w-20"
         >
           Announce
-        </Button>
+        </LoadingButton>
       </div>
     </div>
   )
