@@ -10,7 +10,7 @@ const userInclude = {
   bio: userTable.bio,
 }
 
-const postInclude = {
+export const postInclude = {
   id: postTable.id,
   content: postTable.content,
   createdAt: postTable.createdAt,
