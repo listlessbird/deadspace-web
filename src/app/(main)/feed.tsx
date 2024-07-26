@@ -1,7 +1,7 @@
 "use client"
 
 import { Post } from "@/app/(main)/_components/posts/post"
-import { useInfinitePosts, usePosts } from "@/app/(main)/hooks/queries"
+import { useInfinitePosts } from "@/app/(main)/hooks/queries"
 import PostsSkelton from "@/components/skeletons/posts"
 import { Button } from "@/components/ui/button"
 import { InfiniteScrollWrapper } from "@/components/ui/infinite-scroll-wrapper"

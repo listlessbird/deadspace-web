@@ -92,7 +92,7 @@ export async function getPaginatedPosts(
   }
 }
 
-export type PostType = Awaited<ReturnType<typeof getPosts>>[number]
+export type PostBaseType = Awaited<ReturnType<typeof getPosts>>[number]
 
 export type PostWithUsers = Awaited<ReturnType<typeof getPostsByUser>>[number]
 
@@ -139,4 +139,25 @@ export async function getTrendingTags(): Promise<
     tag: row.tag,
     count: Number(row.count),
   }))
+}
+
+export async function getPostById(postId: string) {
+  const post = await db
+    .selectDistinct()
+    .from(schema.postTable)
+    .where(sql`${schema.postTable.id} = ${postId}`)
+
+  return post[0]
+}
+
+export async function removePost(postId: string) {
+  return await db.execute(
+    sql`
+      delete 
+        from ${schema.postTable}
+      where
+        ${schema.postTable.id} = ${postId}
+
+    `,
+  )
 }
