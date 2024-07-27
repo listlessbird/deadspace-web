@@ -1,5 +1,5 @@
 import { db } from "@/db"
-import { postTable, schema, userTable } from "@/schema"
+import { followerRelation, postTable, schema, userTable } from "@/schema"
 import { asc, desc, eq, gt, not, sql, lt, or } from "drizzle-orm"
 
 const userInclude = {
@@ -160,4 +160,40 @@ export async function removePost(postId: string) {
 
     `,
   )
+}
+
+export async function getUserById(userId: string) {
+  const user = await db
+    .selectDistinct(userInclude)
+    .from(userTable)
+    .where(eq(userTable.id, userId))
+
+  return user[0]
+}
+
+/**
+ * Get the follower count of a user
+ * @param userId the userId of the user whose follower count we need
+ * @returns The follower count of the user
+ */
+export async function getFollowerCount(userId: string) {
+  const count = await db
+    .select({ count: sql`count(*)`.mapWith(Number) })
+    .from(followerRelation)
+    .where(sql`${followerRelation.followedId} = ${userId}`)
+
+  return count[0]
+}
+
+export async function createFollow(from: string, to: string) {
+  const follow = await db.execute(
+    sql`
+      insert into ${followerRelation}
+      (follower_id, followed_id)
+      VALUES (${from}, ${to})
+      RETURNING *
+    `,
+  )
+
+  return follow
 }
