@@ -1,3 +1,5 @@
+import { FollowButton } from "@/app/(main)/_components/follow-button"
+import { follow } from "@/app/(main)/feed-actions/follow-action"
 import { validateRequest } from "@/auth"
 import { Button } from "@/components/ui/button"
 import { UserAvatar } from "@/components/ui/user-avatar"
@@ -33,7 +35,7 @@ async function GetFollowList() {
               @{user.username}
             </p>
           </Link>
-          <Button>Follow</Button>
+          <FollowButton userId={user.id} />
         </div>
       ))}
     </div>

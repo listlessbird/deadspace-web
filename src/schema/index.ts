@@ -1,6 +1,6 @@
 import { db } from "@/db"
 import { eq } from "drizzle-orm"
-import { pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core"
+import { pgTable, primaryKey, text, timestamp, uuid } from "drizzle-orm/pg-core"
 
 export const userTable = pgTable("user", {
   id: text("id").primaryKey(),
@@ -40,4 +40,31 @@ export const postTable = pgTable("posts", {
 
 export type BasePostType = typeof postTable.$inferSelect
 
-export const schema = { userTable, sessionTable, postTable }
+// jn table for keeping the follower relation
+// follower_id - id of user who's following another
+// followed_id - id of user who's being followed
+
+export const followerRelation = pgTable(
+  "follower_relation",
+  {
+    followerId: text("follower_id")
+      .notNull()
+      .references(() => userTable.id),
+    followedId: text("followed_id")
+      .notNull()
+      .references(() => userTable.id),
+    relationBeganOn: timestamp("relationship_start_on", {
+      withTimezone: true,
+      mode: "date",
+    })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => {
+    return {
+      pk: primaryKey({ columns: [table.followerId, table.followedId] }),
+    }
+  },
+)
+
+export const schema = { userTable, sessionTable, postTable, followerRelation }
