@@ -35,7 +35,7 @@ export async function GET(
       db
         .select()
         .from(schema.followerRelation)
-        .where(sql`${schema.followerRelation.followerId} = ${currentUser?.id}`)
+        .where(sql`${schema.followerRelation.followFrom} = ${currentUser?.id}`)
         .then((v) => !!v),
       getFollowerCount(userId),
     ])

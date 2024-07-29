@@ -1,5 +1,5 @@
 import { db } from "@/db"
-import { eq } from "drizzle-orm"
+import { eq, sql } from "drizzle-orm"
 import { pgTable, primaryKey, text, timestamp, uuid } from "drizzle-orm/pg-core"
 
 export const userTable = pgTable("user", {
@@ -39,18 +39,13 @@ export const postTable = pgTable("posts", {
 })
 
 export type BasePostType = typeof postTable.$inferSelect
-
-// jn table for keeping the follower relation
-// follower_id - id of user who's following another
-// followed_id - id of user who's being followed
-
 export const followerRelation = pgTable(
   "follower_relation",
   {
-    followerId: text("follower_id")
+    followFrom: text("follow_from")
       .notNull()
       .references(() => userTable.id),
-    followedId: text("followed_id")
+    followTo: text("follow_to")
       .notNull()
       .references(() => userTable.id),
     relationBeganOn: timestamp("relationship_start_on", {
@@ -62,7 +57,8 @@ export const followerRelation = pgTable(
   },
   (table) => {
     return {
-      pk: primaryKey({ columns: [table.followerId, table.followedId] }),
+      pk: primaryKey({ columns: [table.followFrom, table.followTo] }),
+      noSelfFollow: sql`CHECK (${table.followFrom} <> ${table.followTo})`,
     }
   },
 )
