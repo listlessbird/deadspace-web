@@ -1,6 +1,17 @@
 import { db } from "@/db"
 import { followerRelation, postTable, schema, userTable } from "@/schema"
-import { asc, desc, eq, gt, not, sql, lt, or } from "drizzle-orm"
+import {
+  asc,
+  desc,
+  eq,
+  gt,
+  not,
+  sql,
+  lt,
+  or,
+  and,
+  isNotNull,
+} from "drizzle-orm"
 
 const userInclude = {
   id: userTable.id,
@@ -98,12 +109,21 @@ export type PostWithUsers = Awaited<ReturnType<typeof getPostsByUser>>[number]
 
 export async function getUsersToFollow(currUserId: string) {
   // use some algo
-  const users = await db
-    .select(userInclude)
-    .from(schema.userTable)
-    .where(not(eq(schema.userTable.id, currUserId)))
-    .limit(5)
 
+  const users = await db
+    .select({
+      ...userInclude,
+      followerCount:
+        sql<number>`(select count(${followerRelation.followTo}) from ${followerRelation} where ${followerRelation.followTo} = ${userTable.id}) as follow_count`.mapWith(
+          Number,
+        ),
+      isFollowedByLoggedInUser: sql<boolean>`exists (
+        select 1 from ${followerRelation} where ${followerRelation.followFrom} = ${currUserId} and ${followerRelation.followTo} = ${userTable.id}
+      )`,
+    })
+    .from(userTable)
+    .where(sql`${userTable.id} != ${currUserId}`)
+    .limit(5)
   return users
 }
 
@@ -180,7 +200,7 @@ export async function getFollowerCount(userId: string) {
   const count = await db
     .select({ count: sql`count(*)`.mapWith(Number) })
     .from(followerRelation)
-    .where(sql`${followerRelation.followedId} = ${userId}`)
+    .where(sql`${followerRelation.followTo} = ${userId}`)
 
   return count[0]
 }
@@ -189,11 +209,25 @@ export async function createFollow(from: string, to: string) {
   const follow = await db.execute(
     sql`
       insert into ${followerRelation}
-      (follower_id, followed_id)
+      (follow_from, follow_to)
       VALUES (${from}, ${to})
       RETURNING *
     `,
   )
 
   return follow
+}
+
+export async function removeFollow(from: string, by: string) {
+  const unfollow = await db.execute(
+    sql`
+      delete 
+      from ${followerRelation}
+      where ${followerRelation.followFrom} = ${from} 
+      and ${followerRelation.followTo} = ${by}
+      returning *
+      `,
+  )
+
+  return unfollow
 }
