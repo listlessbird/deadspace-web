@@ -1,7 +1,5 @@
 import { FollowButton } from "@/app/(main)/_components/follow-button"
-import { follow } from "@/app/(main)/feed-actions/follow-action"
 import { validateRequest } from "@/auth"
-import { Button } from "@/components/ui/button"
 import { UserAvatar } from "@/components/ui/user-avatar"
 import { formattedNumber } from "@/lib/utils"
 import { getTrendingTags, getUsersToFollow } from "@/schema/db-fns"

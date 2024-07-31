@@ -1,5 +1,6 @@
 import { db } from "@/db"
 import { followerRelation, postTable, schema, userTable } from "@/schema"
+import { UserViewType } from "@/types"
 import {
   asc,
   desc,
@@ -12,6 +13,7 @@ import {
   and,
   isNotNull,
 } from "drizzle-orm"
+import { UserInfo } from "os"
 
 const userInclude = {
   id: userTable.id,
@@ -19,6 +21,7 @@ const userInclude = {
   displayName: userTable.displayName,
   avatarUrl: userTable.avatarUrl,
   bio: userTable.bio,
+  createdAt: userTable.createdAt,
 }
 
 export const postInclude = {
@@ -145,6 +148,40 @@ export async function getPaginatedPostsForFollowingFeed(
   }
 }
 
+export async function getPaginatedUserPosts(
+  userId: string,
+  cursor: string | undefined,
+  limit: number = 10,
+) {
+  let cdate: Date | undefined
+
+  if (cursor) {
+    const [, cursorDate] = cursor.split(":")
+
+    cdate = new Date(cursorDate)
+  }
+
+  const result = await db
+    .select(postInclude)
+    .from(postTable)
+    .innerJoin(userTable, eq(postTable.userId, userTable.id))
+    .where(
+      and(
+        eq(postTable.userId, userId),
+        cdate ? lt(postTable.createdAt, cdate) : undefined,
+      ),
+    )
+    .orderBy(desc(postTable.createdAt), desc(postTable.id))
+    .limit(limit)
+
+  const nextCursor =
+    result.length === limit
+      ? `${result[limit - 1].id}:${result[limit - 1].createdAt}`
+      : null
+
+  return { data: result, nextCursor }
+}
+
 export type PostBaseType = Awaited<ReturnType<typeof getPosts>>[number]
 
 export type PostWithUsers = Awaited<ReturnType<typeof getPostsByUser>>[number]
@@ -233,6 +270,22 @@ export async function getUserById(userId: string) {
   return user[0]
 }
 
+export async function getUserByUsername(
+  username: string,
+): Promise<UserViewType> {
+  const [user] = await db
+    .selectDistinct({ ...userInclude })
+    .from(userTable)
+    .where(eq(userTable.username, username))
+
+  const [followerCount, postCount] = await Promise.all([
+    getFollowerCount(user.id),
+    getPostCount(user.id),
+  ])
+
+  return { ...user, followerCount: followerCount.count, postCount }
+}
+
 /**
  * Get the follower count of a user
  * @param userId the userId of the user whose follower count we need
@@ -245,6 +298,17 @@ export async function getFollowerCount(userId: string) {
     .where(sql`${followerRelation.followTo} = ${userId}`)
 
   return count[0]
+}
+
+export async function getPostCount(userId: string) {
+  const postsCount = await db.execute(
+    sql<{
+      count: number
+    }>`select count(*) from ${postTable} where ${postTable.userId} = ${userId}`.mapWith(
+      Number,
+    ),
+  )
+  return postsCount[0]["count"] as number
 }
 
 export async function createFollow(from: string, to: string) {
@@ -272,4 +336,26 @@ export async function removeFollow(from: string, by: string) {
   )
 
   return unfollow
+}
+
+export async function isCurrentUserFollowingTarget(
+  targetUserId: string,
+  currentUserId: string,
+) {
+  const isCurrentUserFollowingTarget = await db.execute(
+    sql<{ is_following: boolean }>`
+      select 
+        exists (
+          select 1 
+            from 
+              ${followerRelation}
+            where 
+              ${followerRelation.followFrom} = ${currentUserId}
+            and 
+              ${followerRelation.followTo} = ${targetUserId}
+        ) as is_following
+    `.mapWith(Boolean),
+  )
+
+  return isCurrentUserFollowingTarget[0]["is_following"] as boolean
 }
