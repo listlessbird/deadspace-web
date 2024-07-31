@@ -17,7 +17,7 @@ export function useOnPostSubmit() {
     mutationFn: submitPost,
     onSuccess: async (newPost) => {
       const queryFilter: QueryFilters = {
-        queryKey: ["post-feed", "infinite-posts"],
+        queryKey: ["post-feed", "infinite-posts", "global"],
       }
 
       await queryClient.cancelQueries(queryFilter)

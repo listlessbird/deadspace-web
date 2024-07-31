@@ -103,6 +103,48 @@ export async function getPaginatedPosts(
   }
 }
 
+export async function getPaginatedPostsForFollowingFeed(
+  currentUserId: string,
+  cursor: string | undefined,
+  limit: number = 10,
+) {
+  let cdate: Date | undefined
+
+  if (cursor) {
+    const [, cursorDate] = cursor.split(":")
+
+    cdate = new Date(cursorDate)
+  }
+
+  const q = db
+    .select(postInclude)
+    .from(postTable)
+    .innerJoin(userTable, eq(postTable.userId, userTable.id))
+    .innerJoin(
+      followerRelation,
+      eq(followerRelation.followTo, postTable.userId),
+    )
+    .where(
+      and(
+        eq(followerRelation.followFrom, currentUserId),
+        cdate ? lt(postTable.createdAt, cdate) : undefined,
+      ),
+    )
+    .orderBy(desc(postTable.createdAt), desc(postTable.id))
+    .limit(limit)
+
+  const result = await q
+  const nextCursor =
+    result.length === limit
+      ? `${result[limit - 1].id}:${result[limit - 1].createdAt}`
+      : null
+
+  return {
+    data: result,
+    nextCursor,
+  }
+}
+
 export type PostBaseType = Awaited<ReturnType<typeof getPosts>>[number]
 
 export type PostWithUsers = Awaited<ReturnType<typeof getPostsByUser>>[number]
