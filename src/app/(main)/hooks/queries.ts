@@ -33,3 +33,19 @@ export function useInfiniteFollowingPosts() {
     getNextPageParam: (lastPage) => lastPage.nextCursor,
   })
 }
+
+export function useInfinteUserPosts(userId: string) {
+  return useInfiniteQuery({
+    queryKey: ["post-feed", "infinite-posts", "user-posts", userId],
+    initialPageParam: null as string | null,
+    queryFn: ({ pageParam }) => {
+      return kyInstance
+        .get(
+          `/api/posts/${userId}`,
+          pageParam ? { searchParams: { c: pageParam } } : {},
+        )
+        .json<PostPage>()
+    },
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
+  })
+}

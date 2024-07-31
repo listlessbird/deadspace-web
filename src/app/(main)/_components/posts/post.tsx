@@ -17,13 +17,13 @@ export function Post({ post }: { post: PostType }) {
     >
       <div className="flex justify-between gap-3">
         <div className="flex flex-wrap gap-3">
-          <Link href={`/users/${post.username}`}>
+          <Link href={`/user/${post.username}`}>
             <UserAvatar avatarUrl={post.avatarUrl} />
           </Link>
           <div>
             <Link
               className="block font-medium hover:underline"
-              href={`/users/${post.username}`}
+              href={`/user/${post.username}`}
             >
               {post.displayName || post.username}
             </Link>
