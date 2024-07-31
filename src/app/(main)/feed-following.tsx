@@ -1,12 +1,15 @@
 "use client"
 
 import { Post } from "@/app/(main)/_components/posts/post"
-import { useInfinitePosts } from "@/app/(main)/hooks/queries"
+import {
+  useInfiniteFollowingPosts,
+  useInfinitePosts,
+} from "@/app/(main)/hooks/queries"
 import PostsSkelton from "@/components/skeletons/posts"
 import { InfiniteScrollWrapper } from "@/components/ui/infinite-scroll-wrapper"
 import { Loader2 } from "lucide-react"
 
-export function Feed() {
+export function FollowingFeed() {
   const {
     data,
     fetchNextPage,
@@ -14,7 +17,7 @@ export function Feed() {
     isFetching,
     isFetchingNextPage,
     status,
-  } = useInfinitePosts()
+  } = useInfiniteFollowingPosts()
 
   const posts = data?.pages.flatMap((page) => page.data) || []
 
@@ -23,7 +26,11 @@ export function Feed() {
   }
 
   if (status === "success" && !posts.length && !hasNextPage) {
-    return <p className="text-center text-muted-foreground"> So empty </p>
+    return (
+      <p className="text-center text-muted-foreground">
+        So empty. Follow some bots to view something here.
+      </p>
+    )
   }
 
   if (status === "error") {
