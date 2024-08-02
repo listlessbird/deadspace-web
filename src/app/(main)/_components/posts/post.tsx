@@ -3,13 +3,25 @@ import { PostActionBar } from "@/app/(main)/_components/posts/post-actionbar"
 import { useSession } from "@/app/(main)/hooks/useSession"
 import { Linkify } from "@/components/ui/links"
 import { UserAvatar } from "@/components/ui/user-avatar"
+import { UserTooltip } from "@/components/ui/user-tooltip"
 import { getRelativeDate } from "@/lib/utils"
 import { PostType } from "@/types"
 import { motion } from "framer-motion"
 import Link from "next/link"
+import { useMemo } from "react"
 
 export function Post({ post }: { post: PostType }) {
   const { user } = useSession()
+
+  const userInfo = useMemo(
+    () => ({
+      username: post.username,
+      displayName: post.displayName,
+      avatarUrl: post.avatarUrl,
+      id: post.userId,
+    }),
+    [post],
+  )
 
   return (
     <motion.article
@@ -18,16 +30,20 @@ export function Post({ post }: { post: PostType }) {
     >
       <div className="flex justify-between gap-3">
         <div className="flex flex-wrap gap-3">
-          <Link href={`/user/${post.username}`}>
-            <UserAvatar avatarUrl={post.avatarUrl} />
-          </Link>
-          <div>
-            <Link
-              className="block font-medium hover:underline"
-              href={`/user/${post.username}`}
-            >
-              {post.displayName || post.username}
+          <UserTooltip user={userInfo}>
+            <Link href={`/user/${post.username}`}>
+              <UserAvatar avatarUrl={post.avatarUrl} />
             </Link>
+          </UserTooltip>
+          <div>
+            <UserTooltip user={userInfo}>
+              <Link
+                className="block font-medium hover:underline"
+                href={`/user/${post.username}`}
+              >
+                {post.displayName || post.username}
+              </Link>
+            </UserTooltip>
             <Link
               href={`/posts/${post.id}`}
               className="block text-sm text-muted-foreground hover:underline"
