@@ -1,6 +1,7 @@
 "use client"
 import { PostActionBar } from "@/app/(main)/_components/posts/post-actionbar"
 import { useSession } from "@/app/(main)/hooks/useSession"
+import { Linkify } from "@/components/ui/links"
 import { UserAvatar } from "@/components/ui/user-avatar"
 import { getRelativeDate } from "@/lib/utils"
 import { PostType } from "@/types"
@@ -43,9 +44,11 @@ export function Post({ post }: { post: PostType }) {
           />
         )}
       </div>
-      <div className="whitespace-pre-line text-pretty break-words">
-        {post.content}
-      </div>
+      <Linkify>
+        <div className="whitespace-pre-line text-pretty break-words">
+          {post.content}
+        </div>
+      </Linkify>
     </motion.article>
   )
 }

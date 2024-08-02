@@ -72,7 +72,11 @@ async function TrendingTopics() {
         const title = tag.split("#")[1]
 
         return (
-          <Link key={title} href={`/tag/${title}`} className="block">
+          <Link
+            key={title}
+            href={`/tag/${title}`}
+            className="block text-primary"
+          >
             <p
               className="line-clamp-1 break-all font-semibold hover:underline"
               title={tag}
