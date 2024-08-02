@@ -14,7 +14,6 @@ import {
 } from "@/schema/db-fns"
 import { FollowerData, UserViewType } from "@/types"
 import { formatDate } from "date-fns"
-import { User } from "lucia"
 import { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { cache } from "react"
@@ -60,10 +59,7 @@ export default async function Page({
   }
 
   const user = await getUser(username)
-  const isFollowedByLoggedInUser = await isCurrentUserFollowingTarget(
-    user.id,
-    currentUser.id,
-  )
+
   return (
     <main className="flex w-full min-w-0 gap-5">
       <div className="w-full min-w-0 space-y-5">
