@@ -4,6 +4,7 @@ import { TrendingSidebar } from "@/app/(main)/_components/trending-topics-bar"
 import { UserPostFeed } from "@/app/(main)/user/[username]/user-posts"
 import { validateRequest } from "@/auth"
 import { Button } from "@/components/ui/button"
+import { Linkify } from "@/components/ui/links"
 import { Separator } from "@/components/ui/separator"
 import { UserAvatar } from "@/components/ui/user-avatar"
 import { formattedNumber } from "@/lib/utils"
@@ -132,9 +133,11 @@ async function UserProfile({
       {user.bio && (
         <>
           <Separator />
-          <div className="overflow-hidden whitespace-pre-line break-words">
-            {user.bio}
-          </div>
+          <Linkify>
+            <div className="overflow-hidden whitespace-pre-line break-words">
+              {user.bio}
+            </div>
+          </Linkify>
         </>
       )}
     </div>
