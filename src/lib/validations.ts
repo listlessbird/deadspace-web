@@ -23,3 +23,10 @@ export type SignInInput = z.infer<typeof signInSchema>
 export const createPostSchema = z.object({
   content: requiredString,
 })
+
+export const updateProfileSchema = z.object({
+  displayName: requiredString,
+  bio: z.string().max(1000, "Must not exceeed 1000 characters"),
+})
+
+export type UpdateUserProfileType = z.infer<typeof updateProfileSchema>

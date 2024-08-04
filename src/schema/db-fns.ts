@@ -1,4 +1,5 @@
 import { db } from "@/db"
+import { UpdateUserProfileType } from "@/lib/validations"
 import { followerRelation, postTable, schema, userTable } from "@/schema"
 import { UserViewType } from "@/types"
 import {
@@ -382,9 +383,31 @@ export async function isCurrentUserFollowingTarget(
 }
 
 export async function updateUserAvatar(userId: string, avatarUrl: string) {
-  return await db
-    .execute(
-      sql`update ${userTable} set ${userTable.avatarUrl} = ${avatarUrl} where ${userTable.id} = ${userId}`,
-    )
-    .catch(console.log)
+  // return await db
+  //   .execute(
+  //     sql`update ${userTable} set ${userTable.avatarUrl} = ${avatarUrl} where ${userTable.id} = ${userId}`,
+  //   )
+  //   .catch(console.log)
+
+  const updatedAvatar = await db
+    .update(userTable)
+    .set({ avatarUrl })
+    .where(eq(userTable.id, userId))
+    .returning({ avatarUrl: userTable.avatarUrl })
+
+  return updatedAvatar[0]["avatarUrl"]
+}
+
+export async function updateUserDisplayInfo({
+  displayName,
+  bio,
+  userId,
+}: UpdateUserProfileType & { userId: string }) {
+  const updatedUser = await db
+    .update(userTable)
+    .set({ bio, displayName })
+    .where(eq(userTable.id, userId))
+    .returning(userInclude)
+
+  return updatedUser[0]
 }

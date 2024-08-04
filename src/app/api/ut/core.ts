@@ -1,7 +1,7 @@
 import { validateRequest } from "@/auth"
 import { updateUserAvatar } from "@/schema/db-fns"
 import { createUploadthing, type FileRouter } from "uploadthing/next"
-import { UploadThingError } from "uploadthing/server"
+import { UploadThingError, UTApi } from "uploadthing/server"
 
 const f = createUploadthing()
 
@@ -28,5 +28,7 @@ export const fileRouter = {
       return { avatarUrl: newAvatarUrl }
     }),
 } satisfies FileRouter
+
+export const utApi = new UTApi()
 
 export type AppFileRouter = typeof fileRouter
