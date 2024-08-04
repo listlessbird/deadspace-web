@@ -31,6 +31,7 @@ export const postInclude = {
   username: userTable.username,
   displayName: userTable.displayName,
   avatarUrl: userTable.avatarUrl,
+  userId: userTable.id,
 }
 
 export async function getPostsByUser(userId: string) {
@@ -273,17 +274,37 @@ export async function getUserById(userId: string) {
 export async function getUserByUsername(
   username: string,
 ): Promise<UserViewType> {
-  const [user] = await db
-    .selectDistinct({ ...userInclude })
+  // const [user] = await db
+  //   .selectDistinct({ ...userInclude })
+  //   .from(userTable)
+  //   .where(eq(userTable.username, username))
+
+  // const [followerCount, postCount] = await Promise.all([
+  //   getFollowerCount(user.id),
+  //   getPostCount(user.id),
+  // ])
+
+  // return { ...user, followerCount: followerCount.count, postCount }
+
+  const result = await db
+    .select({
+      ...userInclude,
+      followerCount: sql<number>`count(distinct ${followerRelation.followFrom})`,
+      postCount: sql<number>`count(distinct ${postTable.id})`,
+    })
     .from(userTable)
+    .leftJoin(followerRelation, eq(userTable.id, followerRelation.followTo))
+    .leftJoin(postTable, eq(userTable.id, postTable.userId))
     .where(eq(userTable.username, username))
+    .groupBy(userTable.id)
+    .limit(1)
 
-  const [followerCount, postCount] = await Promise.all([
-    getFollowerCount(user.id),
-    getPostCount(user.id),
-  ])
+  // if (!result.length) {
+  //   console.log("[GetUserByUsername] No user returned for ", username)
+  //   throw new Error("user not found")
+  // }
 
-  return { ...user, followerCount: followerCount.count, postCount }
+  return result[0]
 }
 
 /**
@@ -358,4 +379,12 @@ export async function isCurrentUserFollowingTarget(
   )
 
   return isCurrentUserFollowingTarget[0]["is_following"] as boolean
+}
+
+export async function updateUserAvatar(userId: string, avatarUrl: string) {
+  return await db
+    .execute(
+      sql`update ${userTable} set ${userTable.avatarUrl} = ${avatarUrl} where ${userTable.id} = ${userId}`,
+    )
+    .catch(console.log)
 }
