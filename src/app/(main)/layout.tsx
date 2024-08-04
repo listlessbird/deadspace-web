@@ -4,8 +4,10 @@ import { SessionProvider } from "@/app/(main)/hooks/useSession"
 import { Menubar } from "@/app/(main)/menubar"
 import { validateRequest } from "@/auth"
 import { redirect } from "next/navigation"
-
+import { NextSSRPlugin } from "@uploadthing/react/next-ssr-plugin"
 import { ReactNode } from "react"
+import { extractRouterConfig } from "uploadthing/server"
+import { fileRouter } from "@/app/api/ut/core"
 
 export default async function Layout({ children }: { children: ReactNode }) {
   const session = await validateRequest()
@@ -14,6 +16,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
 
   return (
     <QueryProvider>
+      <NextSSRPlugin routerConfig={extractRouterConfig(fileRouter)} />
       <SessionProvider value={session}>
         <div className="flex min-h-screen flex-col">
           <Navbar />
