@@ -1,6 +1,7 @@
 import { FollowButton } from "@/app/(main)/_components/follow-button"
 import { FollowerCount } from "@/app/(main)/_components/follow-info"
 import { TrendingSidebar } from "@/app/(main)/_components/trending-topics-bar"
+import { EditUserProfile } from "@/app/(main)/user/[username]/profile-edit-btn"
 import { UserPostFeed } from "@/app/(main)/user/[username]/user-posts"
 import { validateRequest } from "@/auth"
 import { Button } from "@/components/ui/button"
@@ -121,7 +122,8 @@ async function UserProfile({
           </div>
         </div>
         {user.id === currentUserId ? (
-          <Button>Edit Profile</Button>
+          // <Button>Edit Profile</Button>
+          <EditUserProfile user={user} />
         ) : (
           <FollowButton userId={user.id} initialState={followersInitial} />
         )}
