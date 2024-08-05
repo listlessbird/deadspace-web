@@ -10,6 +10,8 @@ import { lucia } from "@/auth"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import { isRedirectError } from "next/dist/client/components/redirect"
+import { utApi } from "@/app/api/ut/core"
+import { updateUserAvatar } from "@/schema/db-fns"
 
 export async function signUp(creds: SignUpInput): Promise<{ error: string }> {
   try {
@@ -62,6 +64,8 @@ export async function signUp(creds: SignUpInput): Promise<{ error: string }> {
       sessionCookie.attributes,
     )
 
+    setRandomAvatarOnCreation(userId)
+
     return redirect("/")
   } catch (error) {
     // nextjs things...
@@ -70,5 +74,28 @@ export async function signUp(creds: SignUpInput): Promise<{ error: string }> {
 
     console.error(error)
     return { error: "An error occurred while signing up" }
+  }
+}
+
+async function setRandomAvatarOnCreation(userId: string) {
+  try {
+    console.log("setting random avatar")
+    const randomPfp =
+      "https://api.nekosapi.com/v3/images/random/file?rating=safe"
+
+    const uploaded = await utApi.uploadFilesFromUrl(randomPfp, {
+      metadata: { name: `random_avatar_${userId}` },
+    })
+
+    const newUrl = uploaded?.data?.url.replace(
+      "/f/",
+      `/a/${process.env.NEXT_PUBLIC_UPLOADTHING_APP_ID}/`,
+    )
+    if (newUrl) {
+      await updateUserAvatar(userId, newUrl)
+    }
+  } catch (error) {
+    console.debug("Error setting random pfp")
+    console.error(error)
   }
 }
