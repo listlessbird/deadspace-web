@@ -23,7 +23,7 @@ export function usePostDeleteMutation() {
     mutationFn: deletePost,
     onSuccess: async (deletedPost) => {
       const queryFilter: QueryFilters = {
-        queryKey: ["post-feed", "infinite-posts", "global"],
+        queryKey: ["post-feed", "infinite-posts"],
       }
 
       await queryClient.cancelQueries()
