@@ -12,7 +12,7 @@ import {
 import { useRouter } from "next/navigation"
 
 export function useUserProfileUpdateMutation() {
-  const { startUpload: startAvatarUplaod } = useUploadThing("avatar")
+  const { startUpload: startAvatarUpload } = useUploadThing("avatar")
 
   const queryClient = useQueryClient()
 
@@ -24,16 +24,17 @@ export function useUserProfileUpdateMutation() {
       avatar,
     }: {
       values: UpdateUserProfileType
-      avatar: File
+      avatar?: File
     }) => {
+      console.log("avatar", avatar)
       return Promise.all([
         updateUserProfileAction(values),
-        avatar && startAvatarUplaod([avatar]),
+        avatar ? startAvatarUpload([avatar]) : undefined,
       ])
     },
     async onSuccess([updatedUser, uploadResult], variables, context) {
       // update feeds using rq cache quickly to reflect changes instantly
-      const newAvatarUrl = uploadResult?.at(0)?.serverData.avatarUrl
+      const newAvatarUrl = uploadResult?.at(0)?.serverData?.avatarUrl
 
       const queryFilter: QueryFilters = {
         queryKey: ["post-feed", "infinite-posts"],
