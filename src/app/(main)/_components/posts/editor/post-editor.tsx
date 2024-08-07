@@ -4,18 +4,37 @@ import { EditorContent, useEditor } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
 import Placeholder from "@tiptap/extension-placeholder"
 import { useCallback, useMemo } from "react"
-import { submitPost } from "@/app/(main)/_components/posts/editor/action"
 import { useSession } from "@/app/(main)/hooks/useSession"
 import { UserAvatar } from "@/components/ui/user-avatar"
-import { Button } from "@/components/ui/button"
 import "./styles.css"
 import { useOnPostSubmit } from "@/app/(main)/_components/posts/editor/mutation"
 import { LoadingButton } from "@/components/ui/loading-button"
+import { useAttachmentUpload } from "@/app/(main)/_components/posts/editor/use-attachment-upload"
+import { nonNullable } from "@/lib/utils"
+import {
+  AttachmentAddButton,
+  Attachments,
+} from "@/app/(main)/_components/posts/editor/editor-attachment"
+import { Loader2 } from "lucide-react"
+import { AnimatePresence, motion } from "framer-motion"
+import useMeasure from "react-use-measure"
 
 export function PostEditor() {
   const mutation = useOnPostSubmit()
 
   const { user } = useSession()
+
+  const {
+    attachments,
+    isUploading,
+    removeAttachment,
+    reset: resetAttachments,
+    startUpload,
+    uploadProgress,
+  } = useAttachmentUpload()
+
+  const [ref, { height }] = useMeasure()
+
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
@@ -24,7 +43,7 @@ export function PostEditor() {
         italic: false,
       }),
       Placeholder.configure({
-        placeholder: "Announce something to the emptyness here...",
+        placeholder: "Announce something to banish the emptyness here...",
       }),
     ],
   })
@@ -38,12 +57,22 @@ export function PostEditor() {
   const onSubmitPost = useCallback(async () => {
     console.log({ input })
     // await submitPost(input)
-    mutation.mutate(input, {
-      onSuccess: () => {
-        editor?.commands.clearContent()
+    mutation.mutate(
+      {
+        content: input,
+        attachmentIds: attachments
+          .map((a) => a.attachmentUploadId)
+          // dont pass {attachmentUploadId: undefined} to the action
+          .filter(nonNullable),
       },
-    })
-  }, [input, editor, mutation])
+      {
+        onSuccess: () => {
+          editor?.commands.clearContent()
+          resetAttachments()
+        },
+      },
+    )
+  }, [input, editor, mutation, attachments, resetAttachments])
 
   return (
     <div className="flex flex-col gap-5 rounded-2xl bg-card p-5 shadow-sm">
@@ -54,10 +83,53 @@ export function PostEditor() {
           className="max-h-[20rem] w-full overflow-y-auto rounded-xl bg-background px-5 py-3"
         />
       </div>
-      <div className="flex justify-end">
+      {/* <motion.div
+        initial={{ height: 0 }}
+        animate={{ height: height || "auto" }}
+        transition={{ duration: 0.3, ease: "easeInOut" }}
+        className="overflow-hidden"
+      >
+        <div ref={ref}>
+          <AnimatePresence initial={false} mode="popLayout">
+            {!!attachments.length && (
+              <Attachments
+                attachments={attachments}
+                removeAttachment={removeAttachment}
+              />
+            )}
+          </AnimatePresence>
+        </div>
+      </motion.div> */}
+      <AnimatePresence initial={false} mode="popLayout">
+        {attachments.length > 0 && (
+          <motion.div
+            key="attachments"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+          >
+            <Attachments
+              attachments={attachments}
+              removeAttachment={removeAttachment}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <div className="flex items-center justify-end gap-2">
+        {isUploading && (
+          <>
+            <span className="text-sm">{uploadProgress ?? 0}%</span>
+            <Loader2 className="size-5 animate-spin text-primary" />
+          </>
+        )}
+        <AttachmentAddButton
+          isDisabled={isUploading || attachments.length >= 5}
+          onAttachmentAdd={startUpload}
+        />
         <LoadingButton
           loading={mutation.isPending}
-          disabled={!input.trim()}
+          disabled={!input.trim() || isUploading}
           onClick={onSubmitPost}
           className="min-w-20"
         >

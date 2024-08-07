@@ -22,6 +22,9 @@ export type SignInInput = z.infer<typeof signInSchema>
 
 export const createPostSchema = z.object({
   content: requiredString,
+  attachmentIds: z
+    .array(z.string())
+    .max(5, "Cannot have more than 5 attachments"),
 })
 
 export const updateProfileSchema = z.object({
