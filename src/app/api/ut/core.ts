@@ -16,6 +16,16 @@ export const fileRouter = {
       return { user }
     })
     .onUploadComplete(async ({ metadata, file }) => {
+      const currentAvatar = metadata.user.avatarUrl
+
+      if (currentAvatar) {
+        const utKey = currentAvatar.split(
+          `/a/${process.env.NEXT_PUBLIC_UPLOADTHING_APP_ID}/`,
+        )[1]
+
+        utApi.deleteFiles(utKey)
+      }
+
       const newAvatarUrl = file.url.replace(
         "/f/",
         `/a/${process.env.NEXT_PUBLIC_UPLOADTHING_APP_ID}/`,
