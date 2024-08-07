@@ -1,6 +1,12 @@
 import { db } from "@/db"
 import { UpdateUserProfileType } from "@/lib/validations"
-import { followerRelation, postTable, schema, userTable } from "@/schema"
+import {
+  followerRelation,
+  postAttachmentTableInsertType,
+  postTable,
+  schema,
+  userTable,
+} from "@/schema"
 import { UserViewType } from "@/types"
 import {
   asc,
@@ -13,6 +19,7 @@ import {
   or,
   and,
   isNotNull,
+  inArray,
 } from "drizzle-orm"
 import { UserInfo } from "os"
 
@@ -410,4 +417,71 @@ export async function updateUserDisplayInfo({
     .returning(userInclude)
 
   return updatedUser[0]
+}
+
+export async function createMediaAttachmentEntry({
+  attachmentUrl,
+  attachmentType,
+  postId,
+}: Pick<postAttachmentTableInsertType, "attachmentType" | "attachmentUrl"> & {
+  postId?: postAttachmentTableInsertType["postId"]
+}) {
+  const insertRecord = await db
+    .insert(schema.postAttachments)
+    .values({
+      attachmentType,
+      attachmentUrl,
+      postId: postId ? postId : undefined,
+    })
+    .returning()
+
+  return insertRecord[0]
+}
+
+export async function createPost({
+  content,
+  userId,
+  attachmentIds,
+}: {
+  content: string
+  userId: string
+  attachmentIds?: string[]
+}): Promise<{
+  id: string
+  createdAt: Date
+  content: string | null
+  userId: string
+}> {
+  let data
+
+  if (attachmentIds && attachmentIds?.length > 0) {
+    data = await db.transaction(async (tx) => {
+      const post = await tx
+        .insert(postTable)
+        .values({ content, userId })
+        .returning()
+
+      const postId = post[0].id
+
+      const updatedAttachments = await tx
+        .update(schema.postAttachments)
+        .set({ postId })
+        .where(inArray(schema.postAttachments.id, attachmentIds))
+        .returning()
+
+      return { ...post[0] }
+    })
+  }
+
+  const newPost = await db
+    .insert(schema.postTable)
+    .values({
+      userId,
+      content,
+    })
+    .returning()
+
+  data = newPost[0]
+
+  return data
 }

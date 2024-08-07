@@ -1,6 +1,13 @@
 import { db } from "@/db"
-import { eq, sql } from "drizzle-orm"
-import { pgTable, primaryKey, text, timestamp, uuid } from "drizzle-orm/pg-core"
+import { eq, InferInsertModel, sql } from "drizzle-orm"
+import {
+  pgEnum,
+  pgTable,
+  primaryKey,
+  text,
+  timestamp,
+  uuid,
+} from "drizzle-orm/pg-core"
 
 export const userTable = pgTable("user", {
   id: text("id").primaryKey(),
@@ -63,4 +70,30 @@ export const followerRelation = pgTable(
   },
 )
 
-export const schema = { userTable, sessionTable, postTable, followerRelation }
+export const mediaType = pgEnum("media_type", ["video", "image"])
+
+export const postAttachments = pgTable("post_attachments", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  // rather than removing the record when a post is delted we need to remove the attachment from the media/file store
+  postId: uuid("post_id").references(() => postTable.id, {
+    onDelete: "set null",
+  }),
+  attachmentUrl: text("attachment_url"),
+  attachmentType: mediaType("attachment_type"),
+  createdAt: timestamp("createdAt", {
+    mode: "date",
+    withTimezone: true,
+  }).defaultNow(),
+})
+
+export type postAttachmentTableInsertType = InferInsertModel<
+  typeof postAttachments
+>
+
+export const schema = {
+  userTable,
+  sessionTable,
+  postTable,
+  followerRelation,
+  postAttachments,
+}
