@@ -56,7 +56,7 @@ export function Attachments({
       layout
       className={cn(
         "relative flex flex-col gap-3",
-        attachments.length > 1 && "sm:grid sm:grid-cols-2",
+        attachments?.length > 1 && "sm:grid sm:grid-cols-2",
       )}
     >
       {attachments.map((attachment) => (

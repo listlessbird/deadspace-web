@@ -8,20 +8,7 @@ import {
   userTable,
 } from "@/schema"
 import { UserViewType } from "@/types"
-import {
-  asc,
-  desc,
-  eq,
-  gt,
-  not,
-  sql,
-  lt,
-  or,
-  and,
-  isNotNull,
-  inArray,
-} from "drizzle-orm"
-import { UserInfo } from "os"
+import { desc, eq, sql, lt, and, isNotNull, inArray } from "drizzle-orm"
 
 const userInclude = {
   id: userTable.id,
@@ -77,22 +64,34 @@ export async function getPaginatedPosts(
   limit: number = 10,
 ) {
   let q = db
-    .select(postInclude)
+    .select({
+      ...postInclude,
+      attachments: sql<
+        { attachmentType: "image" | "video"; attachmentUrl: string }[]
+      >`coalesce(
+        json_agg(
+          json_build_object('attachmentType', ${schema.postAttachments.attachmentType}, 'attachmentUrl', ${schema.postAttachments.attachmentUrl})
+          ) FILTER  (WHERE ${schema.postAttachments.id} is not null), '[]'::json
+          )
+      `,
+    })
     .from(postTable)
     .innerJoin(userTable, eq(postTable.userId, userTable.id))
+    .leftJoin(
+      schema.postAttachments,
+      eq(postTable.id, schema.postAttachments.postId),
+    )
+    .groupBy(
+      postInclude.avatarUrl,
+      postInclude.content,
+      postInclude.createdAt,
+      postInclude.displayName,
+      postInclude.id,
+      postInclude.userId,
+      postInclude.username,
+    )
     .orderBy(desc(postTable.createdAt), desc(postTable.id))
     .limit(limit)
-
-  // if (cursor) {
-  //   const cursorPost = await db
-  //     .select({ createdAt: postTable.createdAt })
-  //     .from(postTable)
-  //     .where(sql`${postTable.id} = ${cursor}`)
-
-  //   if (cursorPost[0]) {
-  //     q.where(lt(postTable.createdAt, cursorPost[0].createdAt))
-  //   }
-  // }
 
   if (cursor) {
     // cursor is in the format postId:createdAt
@@ -129,7 +128,18 @@ export async function getPaginatedPostsForFollowingFeed(
   }
 
   const q = db
-    .select(postInclude)
+    .select({
+      ...postInclude,
+      attchments: sql<
+        { attachmentType: "image" | "video"; attachmentUrl: string }[]
+      >`coalesce(
+        json_agg(
+          json_build_object(
+            'attachmentType', ${schema.postAttachments.attachmentType}, 'attachmentUrl', ${schema.postAttachments.attachmentUrl}
+          ) 
+        ) FILTER (WHERE ${schema.postAttachments.id} is not null)
+      , '[]'::json)`,
+    })
     .from(postTable)
     .innerJoin(userTable, eq(postTable.userId, userTable.id))
     .innerJoin(
@@ -141,6 +151,19 @@ export async function getPaginatedPostsForFollowingFeed(
         eq(followerRelation.followFrom, currentUserId),
         cdate ? lt(postTable.createdAt, cdate) : undefined,
       ),
+    )
+    .leftJoin(
+      schema.postAttachments,
+      eq(schema.postAttachments.postId, postTable.id),
+    )
+    .groupBy(
+      postInclude.avatarUrl,
+      postInclude.content,
+      postInclude.createdAt,
+      postInclude.displayName,
+      postInclude.id,
+      postInclude.userId,
+      postInclude.username,
     )
     .orderBy(desc(postTable.createdAt), desc(postTable.id))
     .limit(limit)
@@ -171,14 +194,40 @@ export async function getPaginatedUserPosts(
   }
 
   const result = await db
-    .select(postInclude)
+    .select({
+      ...postInclude,
+      attachments: sql<
+        { attachmentType: "image" | "video"; attachmentUrl: string }[]
+      >`
+        coalesce(
+          json_agg(
+            json_build_object(
+              'attachmentType', ${schema.postAttachments.attachmentType}, 'attachmentUrl', ${schema.postAttachments.attachmentUrl}
+            )
+          ) FILTER (WHERE ${schema.postAttachments.id} is not null)
+        , '[]'::json)
+      `,
+    })
     .from(postTable)
     .innerJoin(userTable, eq(postTable.userId, userTable.id))
+    .leftJoin(
+      schema.postAttachments,
+      eq(schema.postAttachments.postId, postTable.id),
+    )
     .where(
       and(
         eq(postTable.userId, userId),
         cdate ? lt(postTable.createdAt, cdate) : undefined,
       ),
+    )
+    .groupBy(
+      postInclude.avatarUrl,
+      postInclude.content,
+      postInclude.createdAt,
+      postInclude.displayName,
+      postInclude.id,
+      postInclude.userId,
+      postInclude.username,
     )
     .orderBy(desc(postTable.createdAt), desc(postTable.id))
     .limit(limit)
@@ -452,10 +501,8 @@ export async function createPost({
   content: string | null
   userId: string
 }> {
-  let data
-
   if (attachmentIds && attachmentIds?.length > 0) {
-    data = await db.transaction(async (tx) => {
+    const data = await db.transaction(async (tx) => {
       const post = await tx
         .insert(postTable)
         .values({ content, userId })
@@ -471,6 +518,7 @@ export async function createPost({
 
       return { ...post[0] }
     })
+    return data
   }
 
   const newPost = await db
@@ -481,7 +529,5 @@ export async function createPost({
     })
     .returning()
 
-  data = newPost[0]
-
-  return data
+  return newPost[0]
 }

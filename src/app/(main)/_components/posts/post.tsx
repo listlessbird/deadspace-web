@@ -1,5 +1,6 @@
 "use client"
 import { PostActionBar } from "@/app/(main)/_components/posts/post-actionbar"
+import { PostAttachments } from "@/app/(main)/_components/posts/post-media"
 import { useSession } from "@/app/(main)/hooks/useSession"
 import { Linkify } from "@/components/ui/links"
 import { UserAvatar } from "@/components/ui/user-avatar"
@@ -65,6 +66,9 @@ export function Post({ post }: { post: PostType }) {
           {post.content}
         </div>
       </Linkify>
+      {!!post.attachments?.length && post.attachments.length > 0 && (
+        <PostAttachments attachments={post.attachments} />
+      )}
     </motion.article>
   )
 }
