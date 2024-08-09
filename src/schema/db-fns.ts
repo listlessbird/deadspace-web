@@ -67,10 +67,14 @@ export async function getPaginatedPosts(
     .select({
       ...postInclude,
       attachments: sql<
-        { attachmentType: "image" | "video"; attachmentUrl: string }[]
+        {
+          attachmentType: "image" | "video"
+          attachmentUrl: string
+          blurhash?: string
+        }[]
       >`coalesce(
         json_agg(
-          json_build_object('attachmentType', ${schema.postAttachments.attachmentType}, 'attachmentUrl', ${schema.postAttachments.attachmentUrl})
+          json_build_object('attachmentType', ${schema.postAttachments.attachmentType}, 'attachmentUrl', ${schema.postAttachments.attachmentUrl}, 'blurhash', ${schema.postAttachments.blurhash})
           ) FILTER  (WHERE ${schema.postAttachments.id} is not null), '[]'::json
           )
       `,
@@ -131,11 +135,16 @@ export async function getPaginatedPostsForFollowingFeed(
     .select({
       ...postInclude,
       attchments: sql<
-        { attachmentType: "image" | "video"; attachmentUrl: string }[]
+        {
+          blurhash?: string
+          attachmentType: "image" | "video"
+          attachmentUrl: string
+        }[]
       >`coalesce(
         json_agg(
           json_build_object(
-            'attachmentType', ${schema.postAttachments.attachmentType}, 'attachmentUrl', ${schema.postAttachments.attachmentUrl}
+            'attachmentType', ${schema.postAttachments.attachmentType}, 'attachmentUrl', ${schema.postAttachments.attachmentUrl},
+            'blurhash', ${schema.postAttachments.blurhash}
           ) 
         ) FILTER (WHERE ${schema.postAttachments.id} is not null)
       , '[]'::json)`,
@@ -197,12 +206,16 @@ export async function getPaginatedUserPosts(
     .select({
       ...postInclude,
       attachments: sql<
-        { attachmentType: "image" | "video"; attachmentUrl: string }[]
+        {
+          attachmentType: "image" | "video"
+          attachmentUrl: string
+          blurhash?: string
+        }[]
       >`
         coalesce(
           json_agg(
             json_build_object(
-              'attachmentType', ${schema.postAttachments.attachmentType}, 'attachmentUrl', ${schema.postAttachments.attachmentUrl}
+              'attachmentType', ${schema.postAttachments.attachmentType}, 'attachmentUrl', ${schema.postAttachments.attachmentUrl}, 'blurhash', ${schema.postAttachments.blurhash}
             )
           ) FILTER (WHERE ${schema.postAttachments.id} is not null)
         , '[]'::json)
@@ -236,6 +249,8 @@ export async function getPaginatedUserPosts(
     result.length === limit
       ? `${result[limit - 1].id}:${result[limit - 1].createdAt}`
       : null
+
+  console.log(result)
 
   return { data: result, nextCursor }
 }
@@ -472,8 +487,10 @@ export async function createMediaAttachmentEntry({
   attachmentUrl,
   attachmentType,
   postId,
+  blurhash,
 }: Pick<postAttachmentTableInsertType, "attachmentType" | "attachmentUrl"> & {
   postId?: postAttachmentTableInsertType["postId"]
+  blurhash?: postAttachmentTableInsertType["blurhash"]
 }) {
   const insertRecord = await db
     .insert(schema.postAttachments)
@@ -481,6 +498,7 @@ export async function createMediaAttachmentEntry({
       attachmentType,
       attachmentUrl,
       postId: postId ? postId : undefined,
+      blurhash: blurhash ? blurhash : null,
     })
     .returning()
 

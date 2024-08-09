@@ -21,7 +21,6 @@ export async function GET(req: NextRequest) {
       cursor,
       perPage,
     )
-    console.log(paginatedPosts)
     return NextResponse.json(paginatedPosts)
   } catch (error) {
     console.error(error)

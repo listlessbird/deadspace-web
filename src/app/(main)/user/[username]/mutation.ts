@@ -26,7 +26,6 @@ export function useUserProfileUpdateMutation() {
       values: UpdateUserProfileType
       avatar?: File
     }) => {
-      console.log("avatar", avatar)
       return Promise.all([
         updateUserProfileAction(values),
         avatar ? startAvatarUpload([avatar]) : undefined,

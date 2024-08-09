@@ -1,11 +1,11 @@
 "use server"
 
 import { validateRequest } from "@/auth"
-import { db } from "@/db"
 import { createPostSchema } from "@/lib/validations"
-import { schema } from "@/schema"
 import { createPost } from "@/schema/db-fns"
 import { PostPage } from "@/types"
+
+import { revalidatePath } from "next/cache"
 
 export async function submitPost(content: {
   content: string
@@ -43,7 +43,7 @@ export async function submitPost(content: {
     avatarUrl: user.avatarUrl,
   }
 
-  console.log(data)
+  // revalidatePath("/")
 
   return data as PostPage["data"][0]
 }

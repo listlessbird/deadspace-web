@@ -1,6 +1,7 @@
 import { useSession } from "@/app/(main)/hooks/useSession"
 import { useToast } from "@/components/ui/use-toast"
 import { useUploadThing } from "@/lib/ut"
+import { encodeImageToBlurhash } from "@/lib/utils"
 import { useCallback, useState } from "react"
 
 export type Attachment = {
@@ -20,21 +21,21 @@ export function useAttachmentUpload() {
 
   const { isUploading, startUpload } = useUploadThing("postAttachment", {
     onBeforeUploadBegin(files) {
-      const renamed = files.map((file) => {
-        const ext = file.name.split(".").pop()
-        return new File(
-          [file],
-          `user-attachment_${user.username}_${crypto.randomUUID()}.${ext}`,
-          { type: file.type },
-        )
-      })
+      // const renamed = files.map((file) => {
+      //   const ext = file.name.split(".").pop()
+      //   return new File(
+      //     [file],
+      //     `user-attachment_${user.username}_${crypto.randomUUID()}.${ext}`,
+      //     { type: file.type },
+      //   )
+      // })
 
       setAttachments((prev) => [
         ...prev,
-        ...renamed.map((rf) => ({ file: rf, isUploading: true })),
+        ...files.map((rf) => ({ file: rf, isUploading: true })),
       ])
 
-      return renamed
+      return files
     },
     onUploadProgress: setUploadProgress,
     onClientUploadComplete(res) {
@@ -54,9 +55,6 @@ export function useAttachmentUpload() {
         }),
       )
     },
-    onUploadBegin(fileName) {
-      if (fileName) return
-    },
     onUploadError(e) {
       setAttachments((prev) => prev.filter((p) => !p.isUploading))
       toast({
@@ -67,7 +65,7 @@ export function useAttachmentUpload() {
   })
 
   const handleUpload = useCallback(
-    (files: File[]) => {
+    async (files: File[]) => {
       if (isUploading) {
         toast({
           variant: "destructive",
@@ -83,10 +81,30 @@ export function useAttachmentUpload() {
         })
         return
       }
+      const renamed = files.map((file) => {
+        const ext = file.name.split(".").pop()
+        return new File(
+          [file],
+          `user-attachment_${user.username}_${crypto.randomUUID()}.${ext}`,
+          { type: file.type },
+        )
+      })
 
-      startUpload(files)
+      const blurhashes = await Promise.all(
+        renamed.map(async (file) => {
+          if (file.type.startsWith("image")) {
+            const hash = await encodeImageToBlurhash(URL.createObjectURL(file))
+
+            console.log({ filename: file.name, hash })
+            return { filename: file.name, hash }
+          }
+          return { filename: file.name, hash: null }
+        }),
+      )
+
+      startUpload(renamed, blurhashes)
     },
-    [isUploading, attachments, toast, startUpload],
+    [isUploading, attachments, toast, startUpload, user.username],
   )
 
   const removeAttachment = useCallback((filename: string) => {

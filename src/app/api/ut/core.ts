@@ -2,8 +2,13 @@ import { validateRequest } from "@/auth"
 import { createMediaAttachmentEntry, updateUserAvatar } from "@/schema/db-fns"
 import { createUploadthing, type FileRouter } from "uploadthing/next"
 import { UploadThingError, UTApi } from "uploadthing/server"
+import { z } from "zod"
 
 const f = createUploadthing()
+
+const inputSchema = z
+  .array(z.object({ filename: z.string(), hash: z.string().nullable() }))
+  .max(5)
 
 export const fileRouter = {
   avatar: f({ image: { maxFileSize: "2MB" } })
@@ -42,17 +47,21 @@ export const fileRouter = {
     image: { maxFileSize: "8MB", maxFileCount: 5 },
     video: { maxFileSize: "64MB", maxFileCount: 2 },
   })
-    .middleware(async () => {
+    .input(inputSchema)
+    .middleware(async ({ input }) => {
       const { user } = await validateRequest()
 
       if (!user) throw new UploadThingError("Unauthorized")
 
-      return { user }
+      return { user, input }
     })
-    .onUploadComplete(async ({ file }) => {
+    .onUploadComplete(async ({ file, metadata }) => {
       const media = await createMediaAttachmentEntry({
         attachmentUrl: cleanUtUrl(file.url),
         attachmentType: file.type.startsWith("image") ? "image" : "video",
+        blurhash: metadata.input.find(
+          (blurhash) => blurhash.filename === file.name,
+        )?.hash,
       })
 
       // pass the media id to the frontend

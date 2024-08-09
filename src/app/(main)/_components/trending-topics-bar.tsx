@@ -15,7 +15,6 @@ async function GetFollowList() {
   if (!user) return null
 
   const followList = await getUsersToFollow(user.id)
-  console.log(followList)
   return (
     <div className="space-y-5 rounded-2xl bg-card p-5 shadow-sm">
       <div className="text-xl font-bold">Who to follow</div>
@@ -63,7 +62,6 @@ const getTrendingTopics = unstable_cache(getTrendingTags, ["trending_tags"], {
 
 async function TrendingTopics() {
   const trending = await getTrendingTopics()
-  console.log({ trending })
 
   return (
     <div className="space-y-5 rounded-2xl bg-card p-5 shadow-sm">

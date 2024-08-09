@@ -17,7 +17,6 @@ import {
 } from "@/app/(main)/_components/posts/editor/editor-attachment"
 import { Loader2 } from "lucide-react"
 import { AnimatePresence, motion } from "framer-motion"
-import useMeasure from "react-use-measure"
 
 export function PostEditor() {
   const mutation = useOnPostSubmit()
@@ -32,8 +31,6 @@ export function PostEditor() {
     startUpload,
     uploadProgress,
   } = useAttachmentUpload()
-
-  const [ref, { height }] = useMeasure()
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -82,6 +79,7 @@ export function PostEditor() {
           editor={editor}
           className="max-h-[20rem] w-full overflow-y-auto rounded-xl bg-background px-5 py-3"
         />
+        <canvas className="blur-canvas hidden" />
       </div>
       {/* <motion.div
         initial={{ height: 0 }}
