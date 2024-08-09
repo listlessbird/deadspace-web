@@ -5,8 +5,6 @@ import { createPostSchema } from "@/lib/validations"
 import { createPost } from "@/schema/db-fns"
 import { PostPage } from "@/types"
 
-import { revalidatePath } from "next/cache"
-
 export async function submitPost(content: {
   content: string
   attachmentIds: string[]
