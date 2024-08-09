@@ -18,7 +18,6 @@ export async function follow(userId: string) {
     }
 
     const follow = await createFollow(currentUser.id, userId)
-    console.log(follow)
   } catch (error) {
     console.error("[FollowAction]", error)
   }
@@ -39,7 +38,6 @@ export async function unFollow(userId: string) {
     }
 
     const unfollow = await removeFollow(currentUser.id, userId)
-    console.log(unfollow)
   } catch (error) {
     console.error("[UnFollowAction]", error)
   }

@@ -1,15 +1,24 @@
+"use client"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
+
+import useNextBlurHash from "use-next-blurhash"
 
 type PostAttachment = {
   attachmentType: string
   attachmentUrl: string
+  blurhash?: string
 }
 
 function PostAttachmentPreview({
   attachmentType,
   attachmentUrl,
+  blurhash,
 }: PostAttachment) {
+  const [blurDataUrl] = useNextBlurHash(
+    blurhash || "LEHLk~WB2yk8pyo0adR*.7kCMdnj",
+  )
+
   if (attachmentType === "image") {
     return (
       <Image
@@ -18,6 +27,7 @@ function PostAttachmentPreview({
         height={500}
         alt="Attachment Preview"
         placeholder="blur"
+        blurDataURL={blurDataUrl}
         className="mx-auto size-fit max-h-[25rem] rounded-2xl"
       />
     )

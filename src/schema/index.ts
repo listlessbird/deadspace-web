@@ -80,6 +80,7 @@ export const postAttachments = pgTable("post_attachments", {
   }),
   attachmentUrl: text("attachment_url"),
   attachmentType: mediaType("attachment_type"),
+  blurhash: text("blurhash"),
   createdAt: timestamp("createdAt", {
     mode: "date",
     withTimezone: true,
