@@ -1,5 +1,5 @@
 import { db } from "@/db"
-import { eq, InferInsertModel, sql } from "drizzle-orm"
+import { eq, InferInsertModel, InferSelectModel, sql } from "drizzle-orm"
 import {
   pgEnum,
   pgTable,
@@ -88,6 +88,10 @@ export const postAttachments = pgTable("post_attachments", {
 })
 
 export type postAttachmentTableInsertType = InferInsertModel<
+  typeof postAttachments
+>
+
+export type postAttachmentTableSelectType = InferSelectModel<
   typeof postAttachments
 >
 

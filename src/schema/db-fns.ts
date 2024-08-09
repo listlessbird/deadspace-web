@@ -3,6 +3,7 @@ import { UpdateUserProfileType } from "@/lib/validations"
 import {
   followerRelation,
   postAttachmentTableInsertType,
+  postAttachmentTableSelectType,
   postTable,
   schema,
   userTable,
@@ -518,6 +519,10 @@ export async function createPost({
   createdAt: Date
   content: string | null
   userId: string
+  attachments?: Pick<
+    postAttachmentTableSelectType,
+    "attachmentType" | "attachmentUrl" | "blurhash"
+  >[]
 }> {
   if (attachmentIds && attachmentIds?.length > 0) {
     const data = await db.transaction(async (tx) => {
@@ -532,9 +537,13 @@ export async function createPost({
         .update(schema.postAttachments)
         .set({ postId })
         .where(inArray(schema.postAttachments.id, attachmentIds))
-        .returning()
+        .returning({
+          attachmentUrl: schema.postAttachments.attachmentUrl,
+          attachmentType: schema.postAttachments.attachmentType,
+          blurhash: schema.postAttachments.blurhash,
+        })
 
-      return { ...post[0] }
+      return { ...post[0], attachments: updatedAttachments }
     })
     return data
   }
