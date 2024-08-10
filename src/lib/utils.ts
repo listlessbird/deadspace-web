@@ -34,18 +34,16 @@ export function nonNullable<T>(
   return value !== null && value !== undefined
 }
 
-const loadImage = async (src: string): Promise<HTMLImageElement> =>
-  new Promise((resolve, reject) => {
+function loadImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
     const img = new Image()
     img.onload = () => resolve(img)
     img.onerror = (...args) => reject(args)
     img.src = src
   })
+}
 
-const getImageData = (image: HTMLImageElement) => {
-  const canvas = document.querySelector(
-    "canvas.blur-canvas",
-  )! as HTMLCanvasElement
+function getImageData(image: HTMLImageElement, canvas: HTMLCanvasElement) {
   canvas.width = image.width
   canvas.height = image.height
   const context = canvas.getContext("2d", { willReadFrequently: true })!
@@ -53,8 +51,46 @@ const getImageData = (image: HTMLImageElement) => {
   return context.getImageData(0, 0, image.width, image.height)
 }
 
-export const encodeImageToBlurhash = async (imageUrl: string) => {
+function compressImage(
+  canvas: HTMLCanvasElement,
+  sourceImg: HTMLImageElement,
+  ratio = 50,
+  quality = 50,
+  maxWidth = 0,
+  maxHeight = 0,
+): void {
+  const ctx = canvas.getContext("2d")!
+
+  quality = quality / 100
+  ratio = ratio / 100
+
+  const w = sourceImg.naturalWidth
+  const h = sourceImg.naturalHeight
+
+  const xfactor = maxWidth ? maxWidth / w : 1
+  const yfactor = maxHeight ? maxHeight / h : 1
+
+  ratio = Math.min(ratio, xfactor, yfactor)
+
+  canvas.width = w * ratio
+  canvas.height = h * ratio
+
+  ctx.drawImage(sourceImg, 0, 0, canvas.width, canvas.height)
+}
+
+export async function encodeCompressedImageToBlurhash(
+  imageUrl: string,
+  ratio = 50,
+  quality = 50,
+  maxWidth = 0,
+  maxHeight = 0,
+) {
   const image = await loadImage(imageUrl)
-  const imageData = getImageData(image)
+  const canvas = document.createElement("canvas")
+
+  compressImage(canvas, image, ratio, quality, maxWidth, maxHeight)
+
+  const imageData = getImageData(image, canvas)
+
   return encode(imageData.data, imageData.width, imageData.height, 4, 4)
 }

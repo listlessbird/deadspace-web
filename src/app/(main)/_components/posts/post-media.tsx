@@ -17,6 +17,8 @@ function PostAttachmentPreview({
 }: PostAttachment) {
   const [blurDataUrl] = useNextBlurHash(
     blurhash || "LEHLk~WB2yk8pyo0adR*.7kCMdnj",
+    500,
+    500,
   )
 
   if (attachmentType === "image") {

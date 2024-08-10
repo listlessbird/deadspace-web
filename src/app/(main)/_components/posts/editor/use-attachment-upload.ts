@@ -1,7 +1,7 @@
 import { useSession } from "@/app/(main)/hooks/useSession"
 import { useToast } from "@/components/ui/use-toast"
 import { useUploadThing } from "@/lib/ut"
-import { encodeImageToBlurhash } from "@/lib/utils"
+import { encodeCompressedImageToBlurhash } from "@/lib/utils"
 import { useCallback, useState } from "react"
 
 export type Attachment = {
@@ -93,7 +93,9 @@ export function useAttachmentUpload() {
       const blurhashes = await Promise.all(
         renamed.map(async (file) => {
           if (file.type.startsWith("image")) {
-            const hash = await encodeImageToBlurhash(URL.createObjectURL(file))
+            const hash = await encodeCompressedImageToBlurhash(
+              URL.createObjectURL(file),
+            )
 
             console.log({ filename: file.name, hash })
             return { filename: file.name, hash }
