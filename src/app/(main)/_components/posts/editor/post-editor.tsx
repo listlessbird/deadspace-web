@@ -3,20 +3,21 @@
 import { EditorContent, useEditor } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
 import Placeholder from "@tiptap/extension-placeholder"
-import { useCallback, useMemo } from "react"
+import { useCallback, ClipboardEvent } from "react"
 import { useSession } from "@/app/(main)/hooks/useSession"
 import { UserAvatar } from "@/components/ui/user-avatar"
 import "./styles.css"
 import { useOnPostSubmit } from "@/app/(main)/_components/posts/editor/mutation"
 import { LoadingButton } from "@/components/ui/loading-button"
 import { useAttachmentUpload } from "@/app/(main)/_components/posts/editor/use-attachment-upload"
-import { nonNullable } from "@/lib/utils"
+import { cn, nonNullable } from "@/lib/utils"
 import {
   AttachmentAddButton,
   Attachments,
 } from "@/app/(main)/_components/posts/editor/editor-attachment"
 import { Loader2 } from "lucide-react"
 import { AnimatePresence, motion } from "framer-motion"
+import { useDropzone } from "@uploadthing/react"
 
 export function PostEditor() {
   const mutation = useOnPostSubmit()
@@ -31,6 +32,12 @@ export function PostEditor() {
     startUpload,
     uploadProgress,
   } = useAttachmentUpload()
+
+  const { getInputProps, getRootProps, isDragActive } = useDropzone({
+    onDrop: startUpload,
+  })
+
+  const { onClick, ...rootProps } = getRootProps()
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -71,14 +78,35 @@ export function PostEditor() {
     )
   }, [input, editor, mutation, attachments, resetAttachments])
 
+  const onPaste = useCallback(
+    (e: ClipboardEvent<HTMLInputElement>) => {
+      console.log("pasted", e.clipboardData)
+      const files = Array.from(e.clipboardData.files).filter(
+        (f) => f.type.startsWith("image") || f.type.startsWith("video"),
+      )
+      startUpload(files)
+    },
+    [startUpload],
+  )
+
   return (
     <div className="flex flex-col gap-5 rounded-2xl bg-card p-5 shadow-sm">
       <div className="flex gap-5">
         <UserAvatar avatarUrl={user.avatarUrl} className="hidden sm:inline" />
-        <EditorContent
-          editor={editor}
-          className="max-h-[20rem] w-full overflow-y-auto rounded-xl bg-background px-5 py-3"
-        />
+        <div
+          className={cn(
+            "w-full rounded-2xl",
+            isDragActive && "outline-dashed outline-4",
+          )}
+          {...rootProps}
+        >
+          <EditorContent
+            editor={editor}
+            className="max-h-[20rem] w-full overflow-y-auto rounded-xl bg-background px-5 py-3"
+            onPaste={onPaste}
+          />
+          <input {...getInputProps()} />
+        </div>
         <canvas className="blur-canvas hidden" />
       </div>
       {/* <motion.div
