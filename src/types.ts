@@ -11,9 +11,15 @@ export type PostType = PostPage["data"][number]
 
 export type FollowerData = { followerCount: number; isFollowing: boolean }
 
-export type UserViewType = Awaited<ReturnType<typeof getUserById>> & {
-  followerCount: number
+export type UserViewType = {
+  id: string
+  username: string
+  displayName: string | null
+  avatarUrl: string | null
+  bio: string | null
+  createdAt: Date
   postCount: number
+  followerCount: number
 }
 
 declare const v: Prettify<UserViewType>

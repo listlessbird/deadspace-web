@@ -316,9 +316,42 @@ export async function getTrendingTags(): Promise<
 
 export async function getPostById(postId: string) {
   const post = await db
-    .selectDistinct()
-    .from(schema.postTable)
-    .where(sql`${schema.postTable.id} = ${postId}`)
+    .select({
+      ...postInclude,
+      attachments: sql<
+        {
+          attachmentType: "image" | "video"
+          attachmentUrl: string
+          blurhash?: string
+        }[]
+      >`coalesce(
+        json_agg(
+          json_build_object('attachmentType', ${schema.postAttachments.attachmentType}, 'attachmentUrl', ${schema.postAttachments.attachmentUrl}, 'blurhash', ${schema.postAttachments.blurhash})
+          ) FILTER  (WHERE ${schema.postAttachments.id} is not null), '[]'::json
+          )
+      `,
+    })
+    .from(postTable)
+    .innerJoin(userTable, eq(postTable.userId, userTable.id))
+    .leftJoin(
+      schema.postAttachments,
+      eq(postTable.id, schema.postAttachments.postId),
+    )
+    .where(eq(postTable.id, postId))
+    .groupBy(
+      postInclude.avatarUrl,
+      postInclude.content,
+      postInclude.createdAt,
+      postInclude.displayName,
+      postInclude.id,
+      postInclude.userId,
+      postInclude.username,
+    )
+
+  // const post = await db
+  //   .selectDistinct()
+  //   .from(schema.postTable)
+  //   .where(sql`${schema.postTable.id} = ${postId}`)
 
   return post[0]
 }
@@ -335,13 +368,26 @@ export async function removePost(postId: string) {
   )
 }
 
-export async function getUserById(userId: string) {
-  const user = await db
-    .selectDistinct(userInclude)
-    .from(userTable)
-    .where(eq(userTable.id, userId))
+export async function getUserById(userId: string): Promise<UserViewType> {
+  // const user = await db
+  //   .selectDistinct(userInclude)
+  //   .from(userTable)
+  //   .where(eq(userTable.id, userId))
 
-  return user[0]
+  const result = await db
+    .select({
+      ...userInclude,
+      followerCount: sql<number>`count(distinct ${followerRelation.followFrom})`,
+      postCount: sql<number>`count(distinct ${postTable.id})`,
+    })
+    .from(userTable)
+    .leftJoin(followerRelation, eq(userTable.id, followerRelation.followTo))
+    .leftJoin(postTable, eq(userTable.id, postTable.userId))
+    .where(eq(userTable.id, userId))
+    .groupBy(userTable.id)
+    .limit(1)
+
+  return result[0]
 }
 
 export async function getUserByUsername(
