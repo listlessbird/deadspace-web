@@ -1,6 +1,6 @@
 {
-  "id": "ff87854e-fc30-4fac-bd3d-dd8d7e655095",
-  "prevId": "9209ca72-7ddd-4e56-81a1-00fce9702582",
+  "id": "3917eb9e-1d89-4707-ac84-cd099da3056c",
+  "prevId": "107e663f-18a1-41cc-ba18-b75f507be2b5",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -98,6 +98,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "blurhash": {
+          "name": "blurhash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "createdAt": {
           "name": "createdAt",
           "type": "timestamp with time zone",
@@ -124,6 +130,79 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
+    },
+    "public.post_likes": {
+      "name": "post_likes",
+      "schema": "",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "post_id": {
+          "name": "post_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "post_likes_user_id_user_id_fk": {
+          "name": "post_likes_user_id_user_id_fk",
+          "tableFrom": "post_likes",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "post_likes_post_id_posts_id_fk": {
+          "name": "post_likes_post_id_posts_id_fk",
+          "tableFrom": "post_likes",
+          "tableTo": "posts",
+          "columnsFrom": [
+            "post_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "post_likes_post_id_user_id_pk": {
+          "name": "post_likes_post_id_user_id_pk",
+          "columns": [
+            "post_id",
+            "user_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "uniq_like": {
+          "name": "uniq_like",
+          "nullsNotDistinct": false,
+          "columns": [
+            "post_id",
+            "user_id"
+          ]
+        }
+      }
     },
     "public.posts": {
       "name": "posts",

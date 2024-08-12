@@ -6,6 +6,7 @@ import {
   primaryKey,
   text,
   timestamp,
+  unique,
   uuid,
 } from "drizzle-orm/pg-core"
 
@@ -95,10 +96,37 @@ export type postAttachmentTableSelectType = InferSelectModel<
   typeof postAttachments
 >
 
+export const postLikesTable = pgTable(
+  "post_likes",
+  {
+    userId: text("user_id")
+      .references(() => userTable.id, {
+        onDelete: "cascade",
+      })
+      .notNull(),
+    postId: uuid("post_id")
+      .references(() => postTable.id, {
+        onDelete: "cascade",
+      })
+      .notNull(),
+    createdAt: timestamp("createdAt", {
+      mode: "date",
+      withTimezone: true,
+    }).defaultNow(),
+  },
+  (t) => {
+    return {
+      pk: primaryKey({ columns: [t.postId, t.userId] }),
+      uniqueRecord: unique("uniq_like").on(t.postId, t.userId),
+    }
+  },
+)
+
 export const schema = {
   userTable,
   sessionTable,
   postTable,
   followerRelation,
+  postLikesTable,
   postAttachments,
 }
