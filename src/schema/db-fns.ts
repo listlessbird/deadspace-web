@@ -76,12 +76,17 @@ function getBasePostQuery() {
           ) FILTER  (WHERE ${schema.postAttachments.id} is not null), '[]'::json
           )
       `,
+      likes: sql<{ likes: number }>`count(${schema.postLikesTable.postId})`,
     })
     .from(postTable)
     .innerJoin(userTable, eq(postTable.userId, userTable.id))
     .leftJoin(
       schema.postAttachments,
       eq(postTable.id, schema.postAttachments.postId),
+    )
+    .leftJoin(
+      schema.postLikesTable,
+      eq(schema.postLikesTable.postId, schema.postTable.id),
     )
     .groupBy(
       postInclude.avatarUrl,
@@ -92,46 +97,21 @@ function getBasePostQuery() {
       postInclude.userId,
       postInclude.username,
     )
-    .orderBy(desc(postTable.createdAt), desc(postTable.id))
+  // .orderBy(desc(postTable.createdAt), desc(postTable.id))
+}
+
+function getPaginatedBasePostQuery() {
+  return getBasePostQuery().orderBy(
+    desc(postTable.createdAt),
+    desc(postTable.id),
+  )
 }
 
 export async function getPaginatedPosts(
   cursor: string | undefined,
   limit: number = 10,
 ) {
-  let q = db
-    .select({
-      ...postInclude,
-      attachments: sql<
-        {
-          attachmentType: "image" | "video"
-          attachmentUrl: string
-          blurhash?: string
-        }[]
-      >`coalesce(
-        json_agg(
-          json_build_object('attachmentType', ${schema.postAttachments.attachmentType}, 'attachmentUrl', ${schema.postAttachments.attachmentUrl}, 'blurhash', ${schema.postAttachments.blurhash})
-          ) FILTER  (WHERE ${schema.postAttachments.id} is not null), '[]'::json
-          )
-      `,
-    })
-    .from(postTable)
-    .innerJoin(userTable, eq(postTable.userId, userTable.id))
-    .leftJoin(
-      schema.postAttachments,
-      eq(postTable.id, schema.postAttachments.postId),
-    )
-    .groupBy(
-      postInclude.avatarUrl,
-      postInclude.content,
-      postInclude.createdAt,
-      postInclude.displayName,
-      postInclude.id,
-      postInclude.userId,
-      postInclude.username,
-    )
-    .orderBy(desc(postTable.createdAt), desc(postTable.id))
-    .limit(limit)
+  let q = getPaginatedBasePostQuery().limit(limit)
 
   if (cursor) {
     // cursor is in the format postId:createdAt
@@ -167,50 +147,13 @@ export async function getPaginatedPostsForFollowingFeed(
     cdate = new Date(cursorDate)
   }
 
-  const q = db
-    .select({
-      ...postInclude,
-      attchments: sql<
-        {
-          blurhash?: string
-          attachmentType: "image" | "video"
-          attachmentUrl: string
-        }[]
-      >`coalesce(
-        json_agg(
-          json_build_object(
-            'attachmentType', ${schema.postAttachments.attachmentType}, 'attachmentUrl', ${schema.postAttachments.attachmentUrl},
-            'blurhash', ${schema.postAttachments.blurhash}
-          ) 
-        ) FILTER (WHERE ${schema.postAttachments.id} is not null)
-      , '[]'::json)`,
-    })
-    .from(postTable)
-    .innerJoin(userTable, eq(postTable.userId, userTable.id))
-    .innerJoin(
-      followerRelation,
-      eq(followerRelation.followTo, postTable.userId),
-    )
+  const q = getPaginatedBasePostQuery()
     .where(
       and(
         eq(followerRelation.followFrom, currentUserId),
         cdate ? lt(postTable.createdAt, cdate) : undefined,
       ),
     )
-    .leftJoin(
-      schema.postAttachments,
-      eq(schema.postAttachments.postId, postTable.id),
-    )
-    .groupBy(
-      postInclude.avatarUrl,
-      postInclude.content,
-      postInclude.createdAt,
-      postInclude.displayName,
-      postInclude.id,
-      postInclude.userId,
-      postInclude.username,
-    )
-    .orderBy(desc(postTable.createdAt), desc(postTable.id))
     .limit(limit)
 
   const result = await q
@@ -238,47 +181,13 @@ export async function getPaginatedUserPosts(
     cdate = new Date(cursorDate)
   }
 
-  const result = await db
-    .select({
-      ...postInclude,
-      attachments: sql<
-        {
-          attachmentType: "image" | "video"
-          attachmentUrl: string
-          blurhash?: string
-        }[]
-      >`
-        coalesce(
-          json_agg(
-            json_build_object(
-              'attachmentType', ${schema.postAttachments.attachmentType}, 'attachmentUrl', ${schema.postAttachments.attachmentUrl}, 'blurhash', ${schema.postAttachments.blurhash}
-            )
-          ) FILTER (WHERE ${schema.postAttachments.id} is not null)
-        , '[]'::json)
-      `,
-    })
-    .from(postTable)
-    .innerJoin(userTable, eq(postTable.userId, userTable.id))
-    .leftJoin(
-      schema.postAttachments,
-      eq(schema.postAttachments.postId, postTable.id),
-    )
+  const result = await getPaginatedBasePostQuery()
     .where(
       and(
         eq(postTable.userId, userId),
         cdate ? lt(postTable.createdAt, cdate) : undefined,
       ),
     )
-    .groupBy(
-      postInclude.avatarUrl,
-      postInclude.content,
-      postInclude.createdAt,
-      postInclude.displayName,
-      postInclude.id,
-      postInclude.userId,
-      postInclude.username,
-    )
-    .orderBy(desc(postTable.createdAt), desc(postTable.id))
     .limit(limit)
 
   const nextCursor =
@@ -350,38 +259,7 @@ export async function getTrendingTags(): Promise<
 }
 
 export async function getPostById(postId: string) {
-  const post = await db
-    .select({
-      ...postInclude,
-      attachments: sql<
-        {
-          attachmentType: "image" | "video"
-          attachmentUrl: string
-          blurhash?: string
-        }[]
-      >`coalesce(
-        json_agg(
-          json_build_object('attachmentType', ${schema.postAttachments.attachmentType}, 'attachmentUrl', ${schema.postAttachments.attachmentUrl}, 'blurhash', ${schema.postAttachments.blurhash})
-          ) FILTER  (WHERE ${schema.postAttachments.id} is not null), '[]'::json
-          )
-      `,
-    })
-    .from(postTable)
-    .innerJoin(userTable, eq(postTable.userId, userTable.id))
-    .leftJoin(
-      schema.postAttachments,
-      eq(postTable.id, schema.postAttachments.postId),
-    )
-    .where(eq(postTable.id, postId))
-    .groupBy(
-      postInclude.avatarUrl,
-      postInclude.content,
-      postInclude.createdAt,
-      postInclude.displayName,
-      postInclude.id,
-      postInclude.userId,
-      postInclude.username,
-    )
+  const post = await getBasePostQuery().where(eq(postTable.id, postId))
 
   // const post = await db
   //   .selectDistinct()
@@ -404,11 +282,6 @@ export async function removePost(postId: string) {
 }
 
 export async function getUserById(userId: string): Promise<UserViewType> {
-  // const user = await db
-  //   .selectDistinct(userInclude)
-  //   .from(userTable)
-  //   .where(eq(userTable.id, userId))
-
   const result = await db
     .select({
       ...userInclude,
@@ -428,18 +301,6 @@ export async function getUserById(userId: string): Promise<UserViewType> {
 export async function getUserByUsername(
   username: string,
 ): Promise<UserViewType> {
-  // const [user] = await db
-  //   .selectDistinct({ ...userInclude })
-  //   .from(userTable)
-  //   .where(eq(userTable.username, username))
-
-  // const [followerCount, postCount] = await Promise.all([
-  //   getFollowerCount(user.id),
-  //   getPostCount(user.id),
-  // ])
-
-  // return { ...user, followerCount: followerCount.count, postCount }
-
   const result = await db
     .select({
       ...userInclude,
@@ -452,11 +313,6 @@ export async function getUserByUsername(
     .where(eq(userTable.username, username))
     .groupBy(userTable.id)
     .limit(1)
-
-  // if (!result.length) {
-  //   console.log("[GetUserByUsername] No user returned for ", username)
-  //   throw new Error("user not found")
-  // }
 
   return result[0]
 }
@@ -536,12 +392,6 @@ export async function isCurrentUserFollowingTarget(
 }
 
 export async function updateUserAvatar(userId: string, avatarUrl: string) {
-  // return await db
-  //   .execute(
-  //     sql`update ${userTable} set ${userTable.avatarUrl} = ${avatarUrl} where ${userTable.id} = ${userId}`,
-  //   )
-  //   .catch(console.log)
-
   const updatedAvatar = await db
     .update(userTable)
     .set({ avatarUrl })
