@@ -22,3 +22,20 @@ export async function dislikePost(postId: string) {
         `,
   )
 }
+
+export async function isThePostLikedByUser(postId: string, userId: string) {
+  const isThePostLikedByUser = await db.execute(
+    sql<{ isThePostLikedByUser: boolean }>`select exists(
+                    select 1 
+                        from 
+                            ${postLikesTable}
+                        where
+                            ${postLikesTable.postId} = ${postId}
+                         and
+                             ${postLikesTable.userId} = ${userId}
+                ) 
+        as isThePostLikedByUser`.mapWith(Boolean),
+  )
+
+  return isThePostLikedByUser[0]["isThePostLikedByUser"] as boolean
+}
