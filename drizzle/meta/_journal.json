@@ -5,22 +5,15 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1722230028514,
-      "tag": "0000_tired_nuke",
+      "when": 1723483611567,
+      "tag": "0000_nosy_magneto",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "7",
-      "when": 1723010017538,
-      "tag": "0001_easy_bloodaxe",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1723119178335,
-      "tag": "0002_wonderful_tenebrous",
+      "when": 1723484449801,
+      "tag": "0001_tan_thor",
       "breakpoints": true
     }
   ]

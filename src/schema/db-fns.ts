@@ -60,6 +60,41 @@ export async function getPosts() {
   return posts
 }
 
+function getBasePostQuery() {
+  return db
+    .select({
+      ...postInclude,
+      attachments: sql<
+        {
+          attachmentType: "image" | "video"
+          attachmentUrl: string
+          blurhash?: string
+        }[]
+      >`coalesce(
+        json_agg(
+          json_build_object('attachmentType', ${schema.postAttachments.attachmentType}, 'attachmentUrl', ${schema.postAttachments.attachmentUrl}, 'blurhash', ${schema.postAttachments.blurhash})
+          ) FILTER  (WHERE ${schema.postAttachments.id} is not null), '[]'::json
+          )
+      `,
+    })
+    .from(postTable)
+    .innerJoin(userTable, eq(postTable.userId, userTable.id))
+    .leftJoin(
+      schema.postAttachments,
+      eq(postTable.id, schema.postAttachments.postId),
+    )
+    .groupBy(
+      postInclude.avatarUrl,
+      postInclude.content,
+      postInclude.createdAt,
+      postInclude.displayName,
+      postInclude.id,
+      postInclude.userId,
+      postInclude.username,
+    )
+    .orderBy(desc(postTable.createdAt), desc(postTable.id))
+}
+
 export async function getPaginatedPosts(
   cursor: string | undefined,
   limit: number = 10,
