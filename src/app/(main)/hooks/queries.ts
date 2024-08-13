@@ -41,7 +41,7 @@ export function useInfinteUserPosts(userId: string) {
     queryFn: ({ pageParam }) => {
       return kyInstance
         .get(
-          `/api/posts/${userId}`,
+          `/api/posts/user/${userId}`,
           pageParam ? { searchParams: { c: pageParam } } : {},
         )
         .json<PostPage>()

@@ -22,7 +22,12 @@ export async function GET(
       return NextResponse.json({ error: "User not found" }, { status: 404 })
     }
 
-    const posts = await getPaginatedUserPosts(userId, cursor, perPage)
+    const posts = await getPaginatedUserPosts(
+      currentUser.id,
+      userId,
+      cursor,
+      perPage,
+    )
 
     return NextResponse.json(posts)
   } catch (error) {

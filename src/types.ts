@@ -11,6 +11,8 @@ export type PostType = PostPage["data"][number]
 
 export type FollowerData = { followerCount: number; isFollowing: boolean }
 
+export type LikeData = { likeCount: number; isLiked: boolean }
+
 export type UserViewType = {
   id: string
   username: string

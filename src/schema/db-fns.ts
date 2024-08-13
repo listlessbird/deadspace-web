@@ -8,7 +8,7 @@ import {
   schema,
   userTable,
 } from "@/schema"
-import { UserViewType } from "@/types"
+import { LikeData, UserViewType } from "@/types"
 import { desc, eq, sql, lt, and, isNotNull, inArray } from "drizzle-orm"
 
 const userInclude = {
@@ -76,7 +76,12 @@ function getBasePostQuery() {
           ) FILTER  (WHERE ${schema.postAttachments.id} is not null), '[]'::json
           )
       `,
-      likes: sql<{ likes: number }>`count(${schema.postLikesTable.postId})`,
+      // likes: sql<LikeData>`coalesce(
+      //   json_agg(
+      //     json_build_object('likeCount', count(${schema.postLikesTable.postId}), 'isLiked', (select exists(select 1 from ${schema.postLikesTable} where ${postTable.userId} = ${currentUserId})))
+      //     ) FILTER  (WHERE ${schema.postLikesTable.postId} is not null), '{}'::json
+      //     )
+      // `,
     })
     .from(postTable)
     .innerJoin(userTable, eq(postTable.userId, userTable.id))
@@ -100,18 +105,67 @@ function getBasePostQuery() {
   // .orderBy(desc(postTable.createdAt), desc(postTable.id))
 }
 
-function getPaginatedBasePostQuery() {
-  return getBasePostQuery().orderBy(
+function getBasePostForFeedQuery(currentUserId: string) {
+  return db
+    .select({
+      ...postInclude,
+      attachments: sql<
+        {
+          attachmentType: "image" | "video"
+          attachmentUrl: string
+          blurhash?: string
+        }[]
+      >`coalesce(
+        json_agg(
+          json_build_object('attachmentType', ${schema.postAttachments.attachmentType}, 'attachmentUrl', ${schema.postAttachments.attachmentUrl}, 'blurhash', ${schema.postAttachments.blurhash})
+          ) FILTER  (WHERE ${schema.postAttachments.id} is not null), '[]'::json
+          )
+      `,
+      likes: sql<LikeData>`
+      (
+        select json_build_object('likeCount', count(${schema.postLikesTable.postId}), 'isLiked', exists(
+          select 1 from ${schema.postLikesTable}
+          where ${schema.postLikesTable.postId} = ${schema.postTable.id}
+          and ${schema.postLikesTable.userId} = ${currentUserId}
+          ))
+      )
+`,
+    })
+    .from(postTable)
+    .innerJoin(userTable, eq(postTable.userId, userTable.id))
+    .leftJoin(
+      schema.postAttachments,
+      eq(postTable.id, schema.postAttachments.postId),
+    )
+    .leftJoin(
+      schema.postLikesTable,
+      eq(schema.postLikesTable.postId, schema.postTable.id),
+    )
+    .groupBy(
+      postInclude.avatarUrl,
+      postInclude.content,
+      postInclude.createdAt,
+      postInclude.displayName,
+      postInclude.id,
+      postInclude.userId,
+      postInclude.username,
+    )
+  // .orderBy(desc(postTable.createdAt), desc(postTable.id))
+}
+
+function getPaginatedBasePostQuery(currentUserId: string) {
+  return getBasePostForFeedQuery(currentUserId).orderBy(
     desc(postTable.createdAt),
     desc(postTable.id),
   )
 }
 
 export async function getPaginatedPosts(
+  currentUserId: string,
   cursor: string | undefined,
   limit: number = 10,
 ) {
-  let q = getPaginatedBasePostQuery().limit(limit)
+  let q = getPaginatedBasePostQuery(currentUserId).limit(limit)
 
   if (cursor) {
     // cursor is in the format postId:createdAt
@@ -147,7 +201,7 @@ export async function getPaginatedPostsForFollowingFeed(
     cdate = new Date(cursorDate)
   }
 
-  const q = getPaginatedBasePostQuery()
+  const q = getPaginatedBasePostQuery(currentUserId)
     .where(
       and(
         eq(followerRelation.followFrom, currentUserId),
@@ -169,6 +223,7 @@ export async function getPaginatedPostsForFollowingFeed(
 }
 
 export async function getPaginatedUserPosts(
+  currentUserId: string,
   userId: string,
   cursor: string | undefined,
   limit: number = 10,
@@ -181,7 +236,7 @@ export async function getPaginatedUserPosts(
     cdate = new Date(cursorDate)
   }
 
-  const result = await getPaginatedBasePostQuery()
+  const result = await getPaginatedBasePostQuery(currentUserId)
     .where(
       and(
         eq(postTable.userId, userId),
