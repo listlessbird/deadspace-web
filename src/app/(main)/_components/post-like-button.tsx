@@ -4,12 +4,34 @@ import {
 } from "@/app/(main)/feed-actions/post-like-action"
 import { usePostLikeInfo } from "@/app/(main)/hooks/use-post-like-info"
 import { Button } from "@/components/ui/button"
+import { MotionNumber } from "@/components/ui/motion-number"
 import { useToast } from "@/components/ui/use-toast"
 import { cn } from "@/lib/utils"
 import { LikeData } from "@/types"
 import { QueryKey, useMutation, useQueryClient } from "@tanstack/react-query"
+import { motion, Variants } from "framer-motion"
 import { HeartIcon } from "lucide-react"
 import { useMemo } from "react"
+
+const MotionHeart = motion(HeartIcon)
+
+//  animate={{
+//           fill: data.isLiked ? "#dc2626" : "",
+//           color: data.isLiked ? "#dc2626" : "",
+//         }}
+//         whileHover={{ scale: 1.1, rotate: "5deg" }}
+//         whileTap={{ scale: 1.1, rotate: "5deg" }}
+
+const variants: Variants = {
+  animate: (isLiked: boolean) => ({
+    fill: isLiked ? "#dc2626" : "",
+    color: isLiked ? "#dc2626" : "",
+  }),
+  hover: {
+    scale: 1.1,
+    rotate: "5.5deg",
+  },
+}
 
 export function PostLikeButton({
   postId,
@@ -57,17 +79,26 @@ export function PostLikeButton({
       variant={"ghost"}
       size={"icon"}
       onClick={() => mutate()}
-      className="flex size-fit items-center gap-2 p-2"
+      className="flex size-fit items-center gap-2 border-none p-2 outline-none"
+      asChild
     >
-      <HeartIcon
-        className={cn("size-5", data.isLiked && "fill-red-600 text-red-600")}
-      />
-      <span className="text-sm tabular-nums">
-        {data.likeCount}{" "}
-        <span className="hidden text-sm sm:inline">
-          {data.likeCount > 1 ? "like" : "likes"}
-        </span>
-      </span>
+      <motion.button
+
+      // custom={data.isLiked}
+      // variants={variants}
+      >
+        <MotionHeart
+          // className={cn("size-5", data.isLiked && "fill-red-600 text-red-600")}
+          className="size-5 border-none outline-none"
+          variants={variants}
+          custom={data.isLiked}
+          animate="animate"
+          whileHover="hover"
+          whileTap="hover"
+        />
+        {/* <span className="text-sm tabular-nums">{data.likeCount}</span> */}
+        <MotionNumber value={data.likeCount} className="text-sm" />
+      </motion.button>
     </Button>
   )
 }
