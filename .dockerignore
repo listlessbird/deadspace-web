@@ -1,0 +1,8 @@
+.env
+node_modules
+drizzle
+.next
+
+*.tsbuildinfo
+next-env.d.ts
+deadspace-py-env
