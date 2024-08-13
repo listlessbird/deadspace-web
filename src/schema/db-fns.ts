@@ -202,6 +202,10 @@ export async function getPaginatedPostsForFollowingFeed(
   }
 
   const q = getPaginatedBasePostQuery(currentUserId)
+    .innerJoin(
+      followerRelation,
+      eq(followerRelation.followTo, postTable.userId),
+    )
     .where(
       and(
         eq(followerRelation.followFrom, currentUserId),
