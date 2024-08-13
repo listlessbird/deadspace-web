@@ -1,8 +1,10 @@
 "use client"
+import { PostLikeButton } from "@/app/(main)/_components/post-like-button"
 import { PostActionBar } from "@/app/(main)/_components/posts/post-actionbar"
 import { PostAttachments } from "@/app/(main)/_components/posts/post-media"
 import { useSession } from "@/app/(main)/hooks/useSession"
 import { Linkify } from "@/components/ui/links"
+import { Separator } from "@/components/ui/separator"
 import { UserAvatar } from "@/components/ui/user-avatar"
 import { UserTooltip } from "@/components/ui/user-tooltip"
 import { getRelativeDate } from "@/lib/utils"
@@ -68,6 +70,14 @@ export function Post({ post }: { post: PostType }) {
       {!!post.attachments?.length && post.attachments.length > 0 && (
         <PostAttachments attachments={post.attachments} />
       )}
+      <Separator className="text-muted-foreground" />
+      <PostLikeButton
+        postId={post.id}
+        initialState={{
+          likeCount: post.likes.likeCount,
+          isLiked: post.likes.isLiked,
+        }}
+      />
     </motion.article>
   )
 }

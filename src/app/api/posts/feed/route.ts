@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
     const cursor = req.nextUrl.searchParams.get("c") || undefined
     const perPage = 10
 
-    const paginatedPosts = await getPaginatedPosts(cursor, perPage)
+    const paginatedPosts = await getPaginatedPosts(user.id, cursor, perPage)
 
     return NextResponse.json(paginatedPosts)
   } catch (error) {
