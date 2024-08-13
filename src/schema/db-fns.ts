@@ -328,6 +328,22 @@ export async function getPostById(postId: string) {
   return post[0]
 }
 
+export async function getPostByIdForFeed(
+  postId: string,
+  currentUserId: string,
+) {
+  const post = await getBasePostForFeedQuery(currentUserId).where(
+    eq(postTable.id, postId),
+  )
+
+  // const post = await db
+  //   .selectDistinct()
+  //   .from(schema.postTable)
+  //   .where(sql`${schema.postTable.id} = ${postId}`)
+
+  return post[0]
+}
+
 export async function removePost(postId: string) {
   return await db.execute(
     sql`
