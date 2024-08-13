@@ -6,6 +6,7 @@ import { UserAvatar } from "@/components/ui/user-avatar"
 import { UserTooltip } from "@/components/ui/user-tooltip"
 import {
   getPostById,
+  getPostByIdForFeed,
   getUserById,
   isCurrentUserFollowingTarget,
 } from "@/schema/db-fns"
@@ -17,7 +18,11 @@ import { notFound } from "next/navigation"
 import { cache, Suspense } from "react"
 
 const getPost = cache(async (postId: string) => {
-  const post = await getPostById(postId)
+  const { user } = await validateRequest()
+
+  if (!user) throw Error("Unauthorized")
+
+  const post = await getPostByIdForFeed(postId, user.id)
 
   if (!post) return notFound()
 
