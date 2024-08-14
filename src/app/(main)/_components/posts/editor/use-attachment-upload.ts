@@ -103,7 +103,9 @@ export function useAttachmentUpload() {
           return { filename: file.name, hash: null }
         }),
       )
-
+      // @ts-ignore
+      // wrong type in ut
+      // https://github.com/pingdotgg/uploadthing/blob/092beed749ab2afb01ebff730762abc9ce22238a/packages/shared/src/types.ts#L6
       startUpload(renamed, blurhashes)
     },
     [isUploading, attachments, toast, startUpload, user.username],
