@@ -42,3 +42,6 @@ export default function RootLayout({
     </html>
   )
 }
+
+// FIXME: find a way around the issue where the docker build fails prerendering
+export const dynamic = "force-dynamic"

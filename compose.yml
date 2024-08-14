@@ -1,22 +1,61 @@
 name: deadspace-web
+
 services:
-    postgres:
-      image: postgres
-      restart: always
-      environment:
-        - POSTGRES_DB=${POSTGRES_DB}
-        - POSTGRES_USER=${POSTGRES_USER}
-        - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      healthcheck:
-        test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER}']
-        interval: 10s
-        timeout: 5s
-        retries: 5
-      ports:
-        - 5432:5432
-      volumes:
-        - pg_data:/var/lib/postgresql/data
+  postgres:
+    image: postgres
+    restart: always
+    environment:
+      - POSTGRES_DB_FILE=/run/secrets/POSTGRES_DB
+      - POSTGRES_USER_FILE=/run/secrets/POSTGRES_USER
+      - POSTGRES_PASSWORD_FILE=/run/secrets/POSTGRES_PASSWORD
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$(cat $$POSTGRES_USER_FILE)"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    secrets:
+      - POSTGRES_DB
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+
+  web:
+    image: deadspace-web-ui
+    secrets:
+      - NEXT_PUBLIC_UPLOADTHING_APP_ID
+      - UPLOADTHING_SECRET
+      - DB_URL
+      - POSTGRES_DB
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
 
 volumes:
   pg_data:
 
+secrets:
+  NEXT_PUBLIC_UPLOADTHING_APP_ID:
+    file: ./secrets/NEXT_PUBLIC_UPLOADTHING_APP_ID
+  UPLOADTHING_SECRET:
+    file: ./secrets/UPLOADTHING_SECRET
+  DB_URL:
+    file: ./secrets/DB_URL
+  POSTGRES_DB:
+    file: ./secrets/POSTGRES_DB
+  POSTGRES_USER:
+    file: ./secrets/POSTGRES_USER
+  POSTGRES_PASSWORD:
+    file: ./secrets/POSTGRES_PASSWORD
+
+networks:
+  default:
+    name: deadspace-network
