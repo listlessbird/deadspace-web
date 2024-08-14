@@ -47,6 +47,9 @@ export const fileRouter = {
     image: { maxFileSize: "8MB", maxFileCount: 5 },
     video: { maxFileSize: "64MB", maxFileCount: 2 },
   })
+    // @ts-ignore
+    // wrong type on ut
+    // https://github.com/pingdotgg/uploadthing/blob/092beed749ab2afb01ebff730762abc9ce22238a/packages/shared/src/types.ts#L6
     .input(inputSchema)
     .middleware(async ({ input }) => {
       const { user } = await validateRequest()
@@ -59,7 +62,13 @@ export const fileRouter = {
       const media = await createMediaAttachmentEntry({
         attachmentUrl: cleanUtUrl(file.url),
         attachmentType: file.type.startsWith("image") ? "image" : "video",
+        // @ts-ignore
+        // wrong type in ut
+        // https://github.com/pingdotgg/uploadthing/blob/092beed749ab2afb01ebff730762abc9ce22238a/packages/shared/src/types.ts#L6
         blurhash: metadata.input.find(
+          // @ts-ignore
+          // wrong type in ut
+          // https://github.com/pingdotgg/uploadthing/blob/092beed749ab2afb01ebff730762abc9ce22238a/packages/shared/src/types.ts#L6
           (blurhash) => blurhash.filename === file.name,
         )?.hash,
       })
