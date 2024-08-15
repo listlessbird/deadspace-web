@@ -18,7 +18,7 @@ done < .env
 
 
 
-docker build \
+docker build  \
   --secret id=NEXT_PUBLIC_UPLOADTHING_APP_ID,src=secrets/NEXT_PUBLIC_UPLOADTHING_APP_ID \
   --secret id=UPLOADTHING_SECRET,src=secrets/UPLOADTHING_SECRET \
   --secret id=DB_URL,src=secrets/DB_URL \

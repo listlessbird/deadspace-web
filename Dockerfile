@@ -3,14 +3,9 @@ FROM imbios/bun-node:1.1.22-22.6.0-alpine AS base
 # Install dependencies only when needed
 FROM base AS deps
 
-# RUN apt update -y && apt install libc6-compat -y
-# RUN apk add --no-cache libc6-compat
 
 WORKDIR /app
 
-# COPY package.json .
-
-# COPY bun.lockb .
 
 COPY package.json bun.lockb* yarn.lock* package-lock.json* pnpm-lock.yaml* ./
 RUN \
@@ -22,13 +17,6 @@ RUN \
     fi
 
 
-# RUN bun install
-
-# COPY . .
-
-# RUN bun run build
-
-# CMD ["bun", "run", "start"]
 
 FROM base AS builder
 WORKDIR /app
@@ -36,6 +24,8 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED 1
+
+# we have to export again in the runner stage using an script because each RUN command runs in a new shell, and the environment variables set within it don't persist beyond that command. Also some variables needed in the build stage.
 
 RUN --mount=type=secret,id=NEXT_PUBLIC_UPLOADTHING_APP_ID \
     --mount=type=secret,id=UPLOADTHING_SECRET \
@@ -61,8 +51,10 @@ FROM base AS runner
 WORKDIR /app
 
 ENV NODE_ENV production
-# Uncomment the following line in case you want to disable telemetry during runtime.
 ENV NEXT_TELEMETRY_DISABLED 1
+
+#PUBLIC VARS
+ARG NEXT_PUBLIC_UPLOADTHING_APP_ID=BAKED_NEXT_PUBLIC_UPLOADTHING_APP_ID
 
 RUN addgroup --system --gid 1002 nodejs
 RUN adduser --system --uid 1002 nextjs
@@ -77,15 +69,23 @@ RUN chown nextjs:nodejs .next
 # https://nextjs.org/docs/advanced-features/output-file-tracing
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+
+COPY entrypoint.sh ./
+
+USER root
+RUN chmod 555 entrypoint.sh
+
 
 USER nextjs
 
+
 EXPOSE 3000
-
 ENV PORT 3000
-# set hostname to localhost
 ENV HOSTNAME "0.0.0.0"
-
 # server.js is created by next build from the standalone output
 # https://nextjs.org/docs/pages/api-reference/next-config-js/output
+
+ENTRYPOINT ["/app/entrypoint.sh"]
+
 CMD ["node", "server.js"]
