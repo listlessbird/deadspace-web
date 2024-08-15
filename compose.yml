@@ -24,6 +24,18 @@ services:
 
   web:
     image: deadspace-web-ui
+    build:
+      context: .
+      dockerfile: Dockerfile
+      secrets:
+        - NEXT_PUBLIC_UPLOADTHING_APP_ID
+        - UPLOADTHING_SECRET
+        - DB_URL
+        - POSTGRES_DB
+        - POSTGRES_USER
+        - POSTGRES_PASSWORD
+    ports:
+      - "3000:3000"
     secrets:
       - NEXT_PUBLIC_UPLOADTHING_APP_ID
       - UPLOADTHING_SECRET
@@ -31,11 +43,6 @@ services:
       - POSTGRES_DB
       - POSTGRES_USER
       - POSTGRES_PASSWORD
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
     depends_on:
       - postgres
 
