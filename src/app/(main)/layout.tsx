@@ -30,3 +30,6 @@ export default async function Layout({ children }: { children: ReactNode }) {
     </QueryProvider>
   )
 }
+
+// FIXME: find a way around the issue where the docker build fails prerendering
+export const dynamic = "force-dynamic"
