@@ -1,4 +1,5 @@
 "use client"
+import { PostBookmarkButton } from "@/app/(main)/_components/bookmark-button"
 import { PostLikeButton } from "@/app/(main)/_components/post-like-button"
 import { PostActionBar } from "@/app/(main)/_components/posts/post-actionbar"
 import { PostAttachments } from "@/app/(main)/_components/posts/post-media"
@@ -71,13 +72,22 @@ export function Post({ post }: { post: PostType }) {
         <PostAttachments attachments={post.attachments} />
       )}
       <Separator className="text-muted-foreground" />
-      <PostLikeButton
-        postId={post.id}
-        initialState={{
-          likeCount: post.likes.likeCount,
-          isLiked: post.likes.isLiked,
-        }}
-      />
+      <div className="flex items-center justify-between">
+        <PostLikeButton
+          postId={post.id}
+          initialState={{
+            likeCount: post.likes.likeCount,
+            isLiked: post.likes.isLiked,
+          }}
+        />
+        <PostBookmarkButton
+          postId={post.id}
+          initialState={{
+            bookMarkCount: post.bookmarks.bookMarkCount,
+            isBookMarked: post.bookmarks.isBookMarked,
+          }}
+        />
+      </div>
     </motion.article>
   )
 }

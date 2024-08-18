@@ -15,6 +15,20 @@
       "when": 1723484449801,
       "tag": "0001_tan_thor",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1723962647592,
+      "tag": "0002_pink_blob",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1723962827675,
+      "tag": "0003_fantastic_shinko_yamashiro",
+      "breakpoints": true
     }
   ]
 }
