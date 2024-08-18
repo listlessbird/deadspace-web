@@ -122,6 +122,32 @@ export const postLikesTable = pgTable(
   },
 )
 
+export const bookMarksTable = pgTable(
+  "bookmarks",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: text("user_id")
+      .references(() => userTable.id, {
+        onDelete: "cascade",
+      })
+      .notNull(),
+    postId: uuid("post_id")
+      .references(() => postTable.id, {
+        onDelete: "cascade",
+      })
+      .notNull(),
+    createdAt: timestamp("createdAt", {
+      mode: "date",
+      withTimezone: true,
+    }).defaultNow(),
+  },
+  (t) => {
+    return {
+      uniqueRecord: unique("uniq_bookmark").on(t.postId, t.userId),
+    }
+  },
+)
+
 export const schema = {
   userTable,
   sessionTable,
@@ -129,4 +155,5 @@ export const schema = {
   followerRelation,
   postLikesTable,
   postAttachments,
+  bookMarksTable,
 }

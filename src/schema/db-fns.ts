@@ -8,7 +8,7 @@ import {
   schema,
   userTable,
 } from "@/schema"
-import { LikeData, UserViewType } from "@/types"
+import { BookmarkData, LikeData, UserViewType } from "@/types"
 import { desc, eq, sql, lt, and, isNotNull, inArray } from "drizzle-orm"
 
 const userInclude = {
@@ -130,6 +130,19 @@ function getBasePostForFeedQuery(currentUserId: string) {
           ))
       )
 `,
+      bookmarks: sql<BookmarkData>`
+       (
+          select json_build_object('bookMarkCount',
+            count(${schema.bookMarksTable.postId}),
+            'isBookMarked',
+            exists(
+              select 1 from ${schema.bookMarksTable}
+              where ${schema.bookMarksTable.postId} = ${schema.postTable.id}
+              and ${schema.bookMarksTable.userId} = ${currentUserId}
+            ) 
+          )
+       )
+     `,
     })
     .from(postTable)
     .innerJoin(userTable, eq(postTable.userId, userTable.id))
@@ -140,6 +153,10 @@ function getBasePostForFeedQuery(currentUserId: string) {
     .leftJoin(
       schema.postLikesTable,
       eq(schema.postLikesTable.postId, schema.postTable.id),
+    )
+    .leftJoin(
+      schema.bookMarksTable,
+      eq(schema.bookMarksTable.postId, schema.postTable.id),
     )
     .groupBy(
       postInclude.avatarUrl,
