@@ -32,11 +32,6 @@ export async function GET(
         getBookmarksCount(postId),
       ])
 
-    console.log({
-      likeCount: totalBookmarksOnThePost,
-      isLiked: currentUserHasBookmarkedThePost,
-    })
-
     return NextResponse.json<LikeData>({
       likeCount: totalBookmarksOnThePost,
       isLiked: currentUserHasBookmarkedThePost,

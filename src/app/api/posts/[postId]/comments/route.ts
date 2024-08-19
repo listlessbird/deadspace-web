@@ -1,8 +1,8 @@
 import { validateRequest } from "@/auth"
 import { getPostById } from "@/schema/db-fns"
-import { getPostLikeCount, isThePostLikedByUser } from "@/schema/like-fns"
-import { LikeData } from "@/types"
+import { CommentMeta } from "@/types"
 import { NextRequest, NextResponse } from "next/server"
+import { getCommentsCount } from "@/schema/comment-fns"
 
 export async function GET(
   req: NextRequest,
@@ -23,13 +23,14 @@ export async function GET(
       return NextResponse.json({ error: "Post not found" }, { status: 404 })
     }
 
-    const [currentUserHasLikedThePost, totalLikesOnThePost] = await Promise.all(
-      [isThePostLikedByUser(postId, currentUser.id), getPostLikeCount(postId)],
-    )
+    const commentCount = await getCommentsCount(postId)
 
-    return NextResponse.json<LikeData>({
-      likeCount: totalLikesOnThePost,
-      isLiked: currentUserHasLikedThePost,
+    console.log({
+      commentCount,
+    })
+
+    return NextResponse.json<CommentMeta>({
+      commentCount,
     })
   } catch (error) {
     console.error(error)

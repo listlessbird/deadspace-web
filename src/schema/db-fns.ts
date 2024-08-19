@@ -7,8 +7,9 @@ import {
   postTable,
   schema,
   userTable,
+  commentsTable,
 } from "@/schema"
-import { BookmarkData, LikeData, UserViewType } from "@/types"
+import { BookmarkData, CommentMeta, LikeData, UserViewType } from "@/types"
 import { desc, eq, sql, lt, and, isNotNull, inArray } from "drizzle-orm"
 
 const userInclude = {
@@ -143,6 +144,13 @@ function getBasePostForFeedQuery(currentUserId: string) {
           )
        )
      `,
+      comments: sql<CommentMeta>`
+        (
+          select json_build_object('commentCount',
+            count(${commentsTable.id}) filter (WHERE ${commentsTable.parentId} is null)
+          )
+        )
+      `,
     })
     .from(postTable)
     .innerJoin(userTable, eq(postTable.userId, userTable.id))
@@ -158,6 +166,7 @@ function getBasePostForFeedQuery(currentUserId: string) {
       schema.bookMarksTable,
       eq(schema.bookMarksTable.postId, schema.postTable.id),
     )
+    .leftJoin(commentsTable, eq(commentsTable.postId, postTable.id))
     .groupBy(
       postInclude.avatarUrl,
       postInclude.content,

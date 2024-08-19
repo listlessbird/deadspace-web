@@ -1,8 +1,11 @@
 import { validateRequest } from "@/auth"
-import { getPaginatedBookmarks } from "@/schema/bookmark-fns"
+import { getPaginatedComments } from "@/schema/comment-fns"
 import { NextRequest, NextResponse } from "next/server"
 
-export async function GET(req: NextRequest) {
+export async function GET(
+  req: NextRequest,
+  { params: { postId } }: { params: { postId: string } },
+) {
   try {
     const { user } = await validateRequest()
 
@@ -11,11 +14,18 @@ export async function GET(req: NextRequest) {
     }
 
     const cursor = req.nextUrl.searchParams.get("c") || undefined
-    const perPage = 10
+    const perPage = 5
 
-    const paginatedPosts = await getPaginatedBookmarks(user.id, cursor, perPage)
+    const paginatedComments = await getPaginatedComments(
+      user.id,
+      postId,
+      cursor,
+      perPage,
+    )
 
-    return NextResponse.json(paginatedPosts)
+    console.log(paginatedComments)
+
+    return NextResponse.json(paginatedComments)
   } catch (error) {
     console.error(error)
     return NextResponse.json(

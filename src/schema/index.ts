@@ -1,6 +1,7 @@
 import { db } from "@/db"
 import { eq, InferInsertModel, InferSelectModel, sql } from "drizzle-orm"
 import {
+  AnyPgColumn,
   pgEnum,
   pgTable,
   primaryKey,
@@ -147,6 +148,26 @@ export const bookMarksTable = pgTable(
     }
   },
 )
+
+export const commentsTable = pgTable("comments", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: text("user_id")
+    .references(() => userTable.id, { onDelete: "cascade" })
+    .notNull(),
+  postId: uuid("post_id")
+    .references(() => postTable.id, { onDelete: "cascade" })
+    .notNull(),
+  content: text("content").notNull(),
+  parentId: uuid("parent_id").references((): AnyPgColumn => commentsTable.id),
+  createdAt: timestamp("createdAt", {
+    mode: "date",
+    withTimezone: true,
+  }).defaultNow(),
+  updatedAt: timestamp("updatedAt", {
+    mode: "date",
+    withTimezone: true,
+  }).defaultNow(),
+})
 
 export const schema = {
   userTable,

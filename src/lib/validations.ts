@@ -27,6 +27,10 @@ export const createPostSchema = z.object({
     .max(5, "Cannot have more than 5 attachments"),
 })
 
+export const createCommentSchema = z.object({
+  content: requiredString,
+})
+
 export const updateProfileSchema = z.object({
   displayName: requiredString,
   bio: z.string().max(1000, "Must not exceeed 1000 characters"),
