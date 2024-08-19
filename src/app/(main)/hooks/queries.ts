@@ -49,3 +49,19 @@ export function useInfinteUserPosts(userId: string) {
     getNextPageParam: (lastPage) => lastPage.nextCursor,
   })
 }
+
+export function useInfiniteBookmarks() {
+  return useInfiniteQuery({
+    queryKey: ["post-feed", "infinite-posts", "bookmarks"],
+    initialPageParam: null as string | null,
+    queryFn: ({ pageParam }) => {
+      return kyInstance
+        .get(
+          "/api/bookmarks",
+          pageParam ? { searchParams: { c: pageParam } } : {},
+        )
+        .json<PostPage>()
+    },
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
+  })
+}

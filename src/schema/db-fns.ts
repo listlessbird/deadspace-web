@@ -170,7 +170,7 @@ function getBasePostForFeedQuery(currentUserId: string) {
   // .orderBy(desc(postTable.createdAt), desc(postTable.id))
 }
 
-function getPaginatedBasePostQuery(currentUserId: string) {
+export function getPaginatedBasePostQuery(currentUserId: string) {
   return getBasePostForFeedQuery(currentUserId).orderBy(
     desc(postTable.createdAt),
     desc(postTable.id),

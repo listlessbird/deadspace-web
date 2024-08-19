@@ -1,6 +1,7 @@
 import { db } from "@/db"
-import { bookMarksTable, postLikesTable } from "@/schema"
-import { sql } from "drizzle-orm"
+import { bookMarksTable, postTable } from "@/schema"
+import { getPaginatedBasePostQuery } from "@/schema/db-fns"
+import { sql, eq } from "drizzle-orm"
 
 export async function isThePostBookmarkedByUser(
   postId: string,
@@ -53,4 +54,33 @@ export async function removeBookmark(postId: string) {
          where ${bookMarksTable.postId} = ${postId}
         `,
   )
+}
+
+export async function getPaginatedBookmarks(
+  currentUserId: string,
+  cursor: string | undefined,
+  perPage: number = 10,
+) {
+  let cdate: Date | undefined
+
+  if (cursor) {
+    const [, cursorDate] = cursor.split(":")
+    cdate = new Date(cursorDate)
+  }
+
+  const q = getPaginatedBasePostQuery(currentUserId)
+    .where(eq(bookMarksTable.userId, currentUserId))
+    .limit(perPage)
+
+  const bookmarks = await q
+
+  const nextCursor =
+    bookmarks.length === perPage
+      ? `${bookmarks[perPage - 1].id}:${bookmarks[perPage - 1].createdAt}`
+      : null
+
+  return {
+    data: bookmarks,
+    nextCursor,
+  }
 }
