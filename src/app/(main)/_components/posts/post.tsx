@@ -1,5 +1,6 @@
 "use client"
 import { PostBookmarkButton } from "@/app/(main)/_components/bookmark-button"
+import { PostCommentButton } from "@/app/(main)/_components/comment-button"
 import { PostLikeButton } from "@/app/(main)/_components/post-like-button"
 import { PostActionBar } from "@/app/(main)/_components/posts/post-actionbar"
 import { PostAttachments } from "@/app/(main)/_components/posts/post-media"
@@ -12,10 +13,12 @@ import { getRelativeDate } from "@/lib/utils"
 import { PostType } from "@/types"
 import { motion } from "framer-motion"
 import Link from "next/link"
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 
 export function Post({ post }: { post: PostType }) {
   const { user } = useSession()
+
+  const [showComments, setShowComments] = useState(false)
 
   const userInfo = useMemo(
     () => ({
@@ -79,6 +82,11 @@ export function Post({ post }: { post: PostType }) {
             likeCount: post.likes.likeCount,
             isLiked: post.likes.isLiked,
           }}
+        />
+        <PostCommentButton
+          postId={post.id}
+          initialState={{ commentCount: post.comments.commentCount }}
+          onClick={() => setShowComments((p) => !p)}
         />
         <PostBookmarkButton
           postId={post.id}

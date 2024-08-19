@@ -13,6 +13,8 @@ export type FollowerData = { followerCount: number; isFollowing: boolean }
 
 export type LikeData = { likeCount: number; isLiked: boolean }
 
+export type CommentMeta = { commentCount: number }
+
 export type BookmarkData = { bookMarkCount: number; isBookMarked: boolean }
 
 export type UserViewType = {
