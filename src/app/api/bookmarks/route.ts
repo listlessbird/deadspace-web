@@ -1,5 +1,5 @@
 import { validateRequest } from "@/auth"
-import { getPaginatedPosts } from "@/schema/db-fns"
+import { getPaginatedBookmarks } from "@/schema/bookmark-fns"
 import { NextRequest, NextResponse } from "next/server"
 
 export async function GET(req: NextRequest) {
@@ -13,7 +13,9 @@ export async function GET(req: NextRequest) {
     const cursor = req.nextUrl.searchParams.get("c") || undefined
     const perPage = 10
 
-    const paginatedPosts = await getPaginatedPosts(user.id, cursor, perPage)
+    const paginatedPosts = await getPaginatedBookmarks(user.id, cursor, perPage)
+
+    console.log(paginatedPosts)
 
     return NextResponse.json(paginatedPosts)
   } catch (error) {
