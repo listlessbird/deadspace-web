@@ -1,3 +1,4 @@
+import { getPaginatedComments } from "@/schema/comment-fns"
 import { getPaginatedPosts, getUserById } from "@/schema/db-fns"
 import { User } from "lucia"
 
@@ -7,7 +8,11 @@ type Prettify<T> = {
 
 export type PostPage = Awaited<ReturnType<typeof getPaginatedPosts>>
 
+export type CommentsPage = Awaited<ReturnType<typeof getPaginatedComments>>
+
 export type PostType = PostPage["data"][number]
+
+export type CommentType = CommentsPage["data"][number]
 
 export type FollowerData = { followerCount: number; isFollowing: boolean }
 

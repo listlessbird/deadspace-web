@@ -1,7 +1,7 @@
 import { db } from "@/db"
 
 import * as schema from "@/schema"
-import { eq, sql, desc } from "drizzle-orm"
+import { eq, sql, desc, and, lt } from "drizzle-orm"
 
 export async function insertComment(
   content: string,
@@ -57,12 +57,13 @@ export async function getPaginatedComments(
   currentUserId: string,
   postId: string,
   cursor: string | undefined,
-  perPage: number = 10,
+  perPage: number = 5,
 ) {
-  let cdate: Date | null
+  let cdate: Date | undefined
 
   if (cursor) {
-    const [, cursorDate] = cursor.split(":")
+    const separatorIndex = cursor.indexOf(":")
+    const cursorDate = cursor.substring(separatorIndex + 1)
     cdate = new Date(cursorDate)
   }
 
@@ -76,6 +77,7 @@ export async function getPaginatedComments(
       content: schema.commentsTable.content,
       createdAt: schema.commentsTable.createdAt,
       updatedAt: schema.commentsTable.updatedAt,
+      avatarUrl: schema.userTable.avatarUrl,
     })
     .from(schema.commentsTable)
     .innerJoin(
@@ -86,11 +88,15 @@ export async function getPaginatedComments(
       schema.userTable,
       eq(schema.commentsTable.userId, schema.userTable.id),
     )
-    .where(eq(schema.postTable.id, postId))
+    .where(
+      and(
+        eq(schema.postTable.id, postId),
+        cdate ? lt(schema.commentsTable.createdAt, cdate) : undefined,
+      ),
+    )
     .limit(perPage)
     .orderBy(desc(schema.commentsTable.createdAt))
-    // fix me, if not working as intended
-    .offset(perPage)
+
   const nextCursor =
     q.length === perPage
       ? `${q[perPage - 1].id}:${q[perPage - 1].createdAt}`

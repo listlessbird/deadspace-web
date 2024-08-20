@@ -58,9 +58,9 @@ export function PostAttachments({
         attachments.length > 1 && "sm:grid sm:grid-cols-2",
       )}
     >
-      {attachments.map((a) => (
+      {attachments.map((a, idx) => (
         <PostAttachmentPreview
-          key={a.attachmentUrl}
+          key={a.attachmentUrl + a.blurhash + `key-${idx}`}
           attachmentType={a.attachmentType}
           attachmentUrl={a.attachmentUrl}
         />

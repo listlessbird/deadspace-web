@@ -1,5 +1,5 @@
 import kyInstance from "@/lib/ky"
-import { PostPage } from "@/types"
+import { CommentsPage, PostPage } from "@/types"
 import { useInfiniteQuery } from "@tanstack/react-query"
 
 export function useInfinitePosts() {
@@ -61,6 +61,22 @@ export function useInfiniteBookmarks() {
           pageParam ? { searchParams: { c: pageParam } } : {},
         )
         .json<PostPage>()
+    },
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
+  })
+}
+
+export function useInfiniteComments(postId: string) {
+  return useInfiniteQuery({
+    queryKey: ["comments", postId],
+    initialPageParam: null as string | null,
+    queryFn: ({ pageParam }) => {
+      return kyInstance
+        .get(
+          `/api/comments/${postId}/`,
+          pageParam ? { searchParams: { c: pageParam } } : {},
+        )
+        .json<CommentsPage>()
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor,
   })
