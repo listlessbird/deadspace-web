@@ -1,6 +1,7 @@
 "use client"
 import { PostBookmarkButton } from "@/app/(main)/_components/bookmark-button"
-import { PostCommentButton } from "@/app/(main)/_components/comment-button"
+import { PostCommentButton } from "@/app/(main)/_components/comments/comment-button"
+import { Comments } from "@/app/(main)/_components/comments/comments"
 import { PostLikeButton } from "@/app/(main)/_components/post-like-button"
 import { PostActionBar } from "@/app/(main)/_components/posts/post-actionbar"
 import { PostAttachments } from "@/app/(main)/_components/posts/post-media"
@@ -96,6 +97,7 @@ export function Post({ post }: { post: PostType }) {
           }}
         />
       </div>
+      {showComments && <Comments post={post} />}
     </motion.article>
   )
 }

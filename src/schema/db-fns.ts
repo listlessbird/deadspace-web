@@ -8,9 +8,10 @@ import {
   schema,
   userTable,
   commentsTable,
+  postAttachments,
 } from "@/schema"
 import { BookmarkData, CommentMeta, LikeData, UserViewType } from "@/types"
-import { desc, eq, sql, lt, and, isNotNull, inArray } from "drizzle-orm"
+import { desc, eq, sql, lt, and, inArray } from "drizzle-orm"
 
 const userInclude = {
   id: userTable.id,
@@ -110,17 +111,39 @@ function getBasePostForFeedQuery(currentUserId: string) {
   return db
     .select({
       ...postInclude,
+      // attachments: sql<
+      //   {
+      //     attachmentType: "image" | "video"
+      //     attachmentUrl: string
+      //     blurhash?: string
+      //   }[]
+      // >`coalesce(
+      //   json_agg(
+      //     json_build_object('attachmentType', ${schema.postAttachments.attachmentType}, 'attachmentUrl', ${schema.postAttachments.attachmentUrl}, 'blurhash', ${schema.postAttachments.blurhash})
+      //     ) FILTER  (WHERE ${schema.postAttachments.id} is not null), '[]'::json
+      //     )
+      // `
       attachments: sql<
         {
           attachmentType: "image" | "video"
           attachmentUrl: string
           blurhash?: string
         }[]
-      >`coalesce(
-        json_agg(
-          json_build_object('attachmentType', ${schema.postAttachments.attachmentType}, 'attachmentUrl', ${schema.postAttachments.attachmentUrl}, 'blurhash', ${schema.postAttachments.blurhash})
-          ) FILTER  (WHERE ${schema.postAttachments.id} is not null), '[]'::json
-          )
+      >`
+        (
+        SELECT COALESCE(
+          json_agg(
+            json_build_object(
+              'attachmentType', ${postAttachments.attachmentType},
+              'attachmentUrl', ${postAttachments.attachmentUrl},
+              'blurhash', ${postAttachments.blurhash}
+            )
+          ) FILTER (WHERE ${postAttachments.id} IS NOT NULL), 
+          '[]'::json
+        )
+        FROM ${postAttachments}
+        WHERE ${postAttachments.postId} = ${postTable.id}
+      )
       `,
       likes: sql<LikeData>`
       (
