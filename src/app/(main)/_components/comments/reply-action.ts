@@ -2,16 +2,18 @@
 
 import { validateRequest } from "@/auth"
 import { createCommentSchema } from "@/lib/validations"
-import { insertComment } from "@/schema/comment-fns"
+import { insertComment, insertReply } from "@/schema/comment-fns"
 import { getPostById } from "@/schema/db-fns"
 import { CommentsPage } from "@/types"
 
-export async function createCommentAction({
+export async function createReplyAction({
   content,
   postId,
+  commentId,
 }: {
   content: string
   postId: string
+  commentId: string
 }) {
   const { user } = await validateRequest()
 
@@ -23,7 +25,12 @@ export async function createCommentAction({
 
   const { content: parsedContent } = createCommentSchema.parse({ content })
 
-  const newComment = await insertComment(parsedContent, user.id, postId)
+  const newComment = await insertReply(
+    postId,
+    commentId,
+    user.id,
+    parsedContent,
+  )
 
   const data = {
     ...newComment,
@@ -32,7 +39,6 @@ export async function createCommentAction({
     avatarUrl: user.avatarUrl as string | null,
     postId: postId,
     replyCount: 0,
-    parentId: null,
   } satisfies CommentsPage["data"][number]
 
   return data

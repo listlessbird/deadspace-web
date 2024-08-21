@@ -1,6 +1,7 @@
 import { Comment } from "@/app/(main)/_components/comments/comment"
 import { CommentInput } from "@/app/(main)/_components/comments/comment-input"
 import { useInfiniteComments } from "@/app/(main)/hooks/queries"
+import { LoadingButton } from "@/components/ui/loading-button"
 import { PostType } from "@/types"
 import { useMemo } from "react"
 
@@ -14,24 +15,28 @@ export function Comments({ post }: { post: PostType }) {
 
     if (!comments.length) return <div>No comments yet</div>
 
-    return comments.map((comment) => (
-      <Comment key={comment.id} comment={comment} />
-    ))
+    return comments.map((comment) => {
+      if (!comment.parentId) {
+        return <Comment key={comment.id} comment={comment} />
+      }
+    })
   }, [data, isLoading])
 
   return (
     <div>
       <CommentInput post={post} />
-      <div className="divide-y-2">
+      <div className="divide-y-2 px-2">
         {contents}
         {hasNextPage && (
-          <button
+          <LoadingButton
             onClick={() => fetchNextPage()}
             disabled={isFetchingNextPage}
+            loading={isFetchingNextPage}
             className="w-full text-center"
+            variant={"ghost"}
           >
-            {isFetchingNextPage ? "Loading more..." : "Load more"}
-          </button>
+            Load more comments
+          </LoadingButton>
         )}
       </div>
     </div>
