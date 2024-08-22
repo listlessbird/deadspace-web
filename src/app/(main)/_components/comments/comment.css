@@ -30,7 +30,7 @@
     inset-inline: 50%;
   }
 
-  .reply:last-child .comment-avatar-wrap::after {
+  .reply[data-hasreply="false"]:last-child .comment-avatar-wrap::after {
     display: none;
   }
 

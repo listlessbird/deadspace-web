@@ -13,7 +13,11 @@ import { HTMLAttributes, useMemo, useState } from "react"
 export function Comment({
   comment,
   className,
-}: { comment: CommentType } & HTMLAttributes<HTMLDivElement>) {
+  containReply = false,
+}: {
+  comment: CommentType
+  containReply?: boolean
+} & HTMLAttributes<HTMLDivElement>) {
   const [reply, startReply] = useState(false)
 
   const user = useMemo(() => {
@@ -32,13 +36,23 @@ export function Comment({
     const replies = data?.pages.map((page) => page.data).flat()
 
     return replies?.map((reply) => {
-      return <Comment key={reply.id} comment={reply} className="reply py-0" />
+      return (
+        <Comment
+          key={reply.id}
+          comment={reply}
+          className="reply py-0"
+          containReply={reply.replyCount > 0}
+        />
+      )
     })
   }, [data])
 
   return (
     <>
-      <div className={cn("flex gap-3 py-3", className)}>
+      <div
+        className={cn("flex gap-3 py-3", className)}
+        data-hasreply={containReply}
+      >
         <span className="comment-avatar-wrap hidden sm:inline-block">
           <UserTooltip user={user}>
             <Link
