@@ -13,9 +13,17 @@ export function Comments({ post }: { post: PostType }) {
 
   const contents = useMemo(() => {
     const comments = data?.pages.flatMap((page) => page.data) ?? []
-    if (isLoading) return <div>Loading...</div>
+    if (isLoading)
+      return (
+        <div className="py-2 text-center text-muted-foreground">Loading...</div>
+      )
 
-    if (!comments.length) return <div>No comments yet</div>
+    if (!comments.length)
+      return (
+        <div className="py-2 text-center text-muted-foreground">
+          No comments yet
+        </div>
+      )
 
     return comments.map((comment) => {
       if (!comment.parentId) {
