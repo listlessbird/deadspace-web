@@ -14,10 +14,15 @@ import { getRelativeDate } from "@/lib/utils"
 import { PostType } from "@/types"
 import { motion } from "framer-motion"
 import Link from "next/link"
-import { useMemo, useState } from "react"
+import { usePathname, useRouter } from "next/navigation"
+import { useEffect, useMemo, useState } from "react"
 
 export function Post({ post }: { post: PostType }) {
   const { user } = useSession()
+
+  const navigate = useRouter()
+
+  const pathname = usePathname()
 
   const [showComments, setShowComments] = useState(false)
 
@@ -30,6 +35,12 @@ export function Post({ post }: { post: PostType }) {
     }),
     [post],
   )
+
+  useEffect(() => {
+    if (pathname === `/posts/${post.id}`) {
+      setShowComments(true)
+    }
+  }, [pathname, post.id])
 
   return (
     <motion.article
@@ -87,7 +98,9 @@ export function Post({ post }: { post: PostType }) {
         <PostCommentButton
           postId={post.id}
           initialState={{ commentCount: post.comments.commentCount }}
-          onClick={() => setShowComments((p) => !p)}
+          onClick={() => {
+            navigate.push(`/posts/${post.id}`)
+          }}
         />
         <PostBookmarkButton
           postId={post.id}

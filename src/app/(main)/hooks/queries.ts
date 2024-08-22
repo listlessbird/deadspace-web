@@ -81,3 +81,19 @@ export function useInfiniteComments(postId: string) {
     getNextPageParam: (lastPage) => lastPage.nextCursor,
   })
 }
+
+export function useInfiniteReplies(postId: string, parentId: string) {
+  return useInfiniteQuery({
+    queryKey: ["comments", "replies", postId, parentId],
+    initialPageParam: null as string | null,
+    queryFn: ({ pageParam }) => {
+      return kyInstance
+        .get(
+          `/api/comments/${postId}/replies/${parentId}`,
+          pageParam ? { searchParams: { c: pageParam } } : {},
+        )
+        .json<CommentsPage>()
+    },
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
+  })
+}
