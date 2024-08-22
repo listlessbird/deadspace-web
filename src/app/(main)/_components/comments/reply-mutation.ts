@@ -42,7 +42,9 @@ export function useOnReplySubmit(postId: string) {
           }
         },
       )
-      queryClient.invalidateQueries({ queryKey: ["post-comment-info", postId] })
+      queryClient.invalidateQueries({
+        queryKey: ["comment-reply-info-query", postId],
+      })
       toast({
         description: "Reply created",
       })

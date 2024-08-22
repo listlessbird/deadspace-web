@@ -1,14 +1,13 @@
 import { validateRequest } from "@/auth"
 import { getPostById } from "@/schema/db-fns"
-import { CommentMeta } from "@/types"
 import { NextRequest, NextResponse } from "next/server"
-import { getCommentsCount, getReplyCount } from "@/schema/comment-fns"
+import { getPaginatedReplies } from "@/schema/comment-fns"
 
 export async function GET(
   req: NextRequest,
   {
-    params: { commentId, postId },
-  }: { params: { commentId: string; postId: string } },
+    params: { parentId, postId },
+  }: { params: { parentId: string; postId: string } },
 ) {
   try {
     const { user: currentUser } = await validateRequest()
@@ -23,15 +22,19 @@ export async function GET(
       return NextResponse.json({ error: "Post not found" }, { status: 404 })
     }
 
-    const replyCount = await getReplyCount(postId, commentId)
+    const cursor = req.nextUrl.searchParams.get("c") || undefined
+    const perPage = 5
 
-    console.log({
-      replyCount,
-    })
+    const paginatedReplies = await getPaginatedReplies(
+      postId,
+      parentId,
+      cursor,
+      perPage,
+    )
 
-    return NextResponse.json<CommentMeta>({
-      commentCount: replyCount,
-    })
+    console.log(paginatedReplies)
+
+    return NextResponse.json(paginatedReplies)
   } catch (error) {
     console.error(error)
     return NextResponse.json(

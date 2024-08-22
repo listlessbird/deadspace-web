@@ -1,14 +1,21 @@
 import { useOnCommentSubmit } from "@/app/(main)/_components/comments/comment-mutation"
+import { useOnReplySubmit } from "@/app/(main)/_components/comments/reply-mutation"
 import { Input } from "@/components/ui/input"
 import { LoadingButton } from "@/components/ui/loading-button"
-import { PostType } from "@/types"
+import { CommentType, PostType } from "@/types"
 import { SendHorizonal } from "lucide-react"
 import { FormEvent, useCallback, useState } from "react"
 
-export function CommentInput({ post }: { post: PostType }) {
+export function ReplyInput({
+  comment,
+  postId,
+}: {
+  comment: CommentType
+  postId: string
+}) {
   const [content, setContent] = useState("")
 
-  const mutation = useOnCommentSubmit(post.id)
+  const mutation = useOnReplySubmit(postId)
 
   const onSubmit = useCallback(
     (e: FormEvent) => {
@@ -17,7 +24,7 @@ export function CommentInput({ post }: { post: PostType }) {
       if (!content) return
 
       mutation.mutate(
-        { content, postId: post.id },
+        { postId, commentId: comment.id, content },
         {
           onSuccess: () => {
             setContent("")
@@ -25,24 +32,16 @@ export function CommentInput({ post }: { post: PostType }) {
         },
       )
     },
-    [content, post.id, mutation],
+    [content, comment.id, postId, mutation],
   )
 
   return (
     <form className="flex w-full items-center gap-2" onSubmit={onSubmit}>
       <Input
-        placeholder="Write your thoughts to the post"
+        placeholder="Reply"
         value={content}
         onChange={(e) => setContent(e.target.value)}
       />
-      {/* <Button
-        type="submit"
-        variant={"ghost"}
-        size={"icon"}
-        disabled={!content.trim() || mutation.isPending}
-      >
-        <span className="sr-only">Submit</span>
-      </Button> */}
       <LoadingButton
         loading={mutation.isPending}
         type="submit"
@@ -50,7 +49,7 @@ export function CommentInput({ post }: { post: PostType }) {
         size={"icon"}
         disabled={!content.trim() || mutation.isPending}
       >
-        <span className="sr-only">Submit comment</span>
+        <span className="sr-only">Submit Reply</span>
         <SendHorizonal />
       </LoadingButton>
     </form>
