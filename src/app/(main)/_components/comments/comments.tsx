@@ -5,6 +5,8 @@ import { LoadingButton } from "@/components/ui/loading-button"
 import { PostType } from "@/types"
 import { useMemo } from "react"
 
+import "@/app/(main)/_components/comments/comment.css"
+
 export function Comments({ post }: { post: PostType }) {
   const { data, isFetchingNextPage, isLoading, hasNextPage, fetchNextPage } =
     useInfiniteComments(post.id)
@@ -17,7 +19,13 @@ export function Comments({ post }: { post: PostType }) {
 
     return comments.map((comment) => {
       if (!comment.parentId) {
-        return <Comment key={comment.id} comment={comment} />
+        return (
+          <Comment
+            key={comment.id}
+            comment={comment}
+            className="comment-root"
+          />
+        )
       }
     })
   }, [data, isLoading])
