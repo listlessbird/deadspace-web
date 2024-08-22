@@ -43,7 +43,7 @@ export function Comment({
           <UserTooltip user={user}>
             <Link
               href={`/user/${comment.username}`}
-              className="comment-avatar inline-block overflow-hidden"
+              className="comment-avatar inline-block"
             >
               <UserAvatar avatarUrl={comment.avatarUrl} size={40} />
             </Link>
