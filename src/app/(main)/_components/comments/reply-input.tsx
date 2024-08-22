@@ -15,7 +15,7 @@ export function ReplyInput({
 }) {
   const [content, setContent] = useState("")
 
-  const mutation = useOnReplySubmit(postId)
+  const mutation = useOnReplySubmit(postId, comment.id)
 
   const onSubmit = useCallback(
     (e: FormEvent) => {

@@ -12,7 +12,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query"
 
-export function useOnReplySubmit(postId: string) {
+export function useOnReplySubmit(postId: string, parentId: string) {
   const { toast } = useToast()
 
   const queryClient = useQueryClient()
@@ -20,7 +20,7 @@ export function useOnReplySubmit(postId: string) {
   const mutation = useMutation({
     mutationFn: createReplyAction,
     onSuccess: async (newComment) => {
-      const qKey: QueryKey = ["comments", postId]
+      const qKey: QueryKey = ["comments", "replies", postId, parentId]
 
       await queryClient.cancelQueries({ queryKey: qKey })
       queryClient.setQueryData<InfiniteData<CommentsPage, string | null>>(

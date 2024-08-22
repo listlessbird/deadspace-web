@@ -76,7 +76,7 @@ export function Comment({
               }}
             />
           </div>
-          {reply && <div className="border-y-0 ps-2">{replies}</div>}
+          {reply && <div className="ps-2">{replies}</div>}
         </div>
       </div>
     </>
