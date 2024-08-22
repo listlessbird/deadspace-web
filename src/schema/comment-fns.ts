@@ -173,7 +173,7 @@ export async function getPaginatedReplies(
       updatedAt: schema.commentsTable.updatedAt,
       avatarUrl: schema.userTable.avatarUrl,
       parentId: schema.commentsTable.parentId,
-      replyCount: sql<number>`(SELECT COUNT(*) FROM ${schema.commentsTable} WHERE ${schema.commentsTable.parentId} = ${parentId})`,
+      replyCount: sql<number>`(SELECT COUNT(*) FROM ${schema.commentsTable} AS replies WHERE replies.parent_id = ${schema.commentsTable.id})`,
     })
     .from(schema.commentsTable)
     .innerJoin(
