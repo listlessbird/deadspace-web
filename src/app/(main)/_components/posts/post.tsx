@@ -99,6 +99,11 @@ export function Post({ post }: { post: PostType }) {
           postId={post.id}
           initialState={{ commentCount: post.comments.commentCount }}
           onClick={() => {
+            if (pathname === `/posts/${post.id}`) {
+              setShowComments((prev) => !prev)
+              return
+            }
+
             navigate.push(`/posts/${post.id}`)
           }}
         />

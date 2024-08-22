@@ -32,16 +32,19 @@ export function Comment({
     const replies = data?.pages.map((page) => page.data).flat()
 
     return replies?.map((reply) => {
-      return <Comment key={reply.id} comment={reply} className="reply" />
+      return <Comment key={reply.id} comment={reply} className="reply py-0" />
     })
   }, [data])
 
   return (
     <>
       <div className={cn("flex gap-3 py-3", className)}>
-        <span className="hidden sm:inline">
+        <span className="comment-avatar-wrap hidden sm:inline-block">
           <UserTooltip user={user}>
-            <Link href={`/user/${comment.username}`}>
+            <Link
+              href={`/user/${comment.username}`}
+              className="comment-avatar inline-block overflow-hidden"
+            >
               <UserAvatar avatarUrl={comment.avatarUrl} size={40} />
             </Link>
           </UserTooltip>
