@@ -1,6 +1,7 @@
 import { db } from "@/db"
 
 import * as schema from "@/schema"
+import { CommentType } from "@/types"
 import { eq, sql, desc, and, lt } from "drizzle-orm"
 
 export async function insertComment(
@@ -203,4 +204,28 @@ export async function getPaginatedReplies(
     data: q,
     nextCursor,
   }
+}
+
+export async function getCommentById(commentId: string) {
+  const comment = await db
+    .select({
+      id: schema.commentsTable.id,
+      content: schema.commentsTable.content,
+      userId: schema.commentsTable.userId,
+      postId: schema.commentsTable.postId,
+      parentId: schema.commentsTable.parentId,
+      createdAt: schema.commentsTable.createdAt,
+      updatedAt: schema.commentsTable.updatedAt,
+      replyCount: sql<number>`(SELECT COUNT(*) FROM ${schema.commentsTable} AS replies WHERE replies.parent_id = ${schema.commentsTable.id})`,
+    })
+    .from(schema.commentsTable)
+    .where(eq(schema.commentsTable.id, commentId))
+
+  return comment[0]
+}
+
+export async function removeComment(commentId: string) {
+  return await db
+    .delete(schema.commentsTable)
+    .where(eq(schema.commentsTable.id, commentId))
 }

@@ -1,8 +1,10 @@
+import { CommentActionBar } from "@/app/(main)/_components/comments/action-components/comment-action-bar"
 import { CommentLikeButton } from "@/app/(main)/_components/comments/comment-like-btn"
 import { ReplyInput } from "@/app/(main)/_components/comments/reply-input"
 import { CommentReplyStat } from "@/app/(main)/_components/comments/reply-stat"
 import { PostLikeButton } from "@/app/(main)/_components/post-like-button"
 import { useInfiniteReplies } from "@/app/(main)/hooks/queries"
+import { useSession } from "@/app/(main)/hooks/useSession"
 import { UserAvatar } from "@/components/ui/user-avatar"
 import { UserTooltip } from "@/components/ui/user-tooltip"
 import { cn, getRelativeDate } from "@/lib/utils"
@@ -19,6 +21,8 @@ export function Comment({
   containReply?: boolean
 } & HTMLAttributes<HTMLDivElement>) {
   const [reply, startReply] = useState(false)
+
+  const { user: currentUser } = useSession()
 
   const user = useMemo(() => {
     return {
@@ -50,7 +54,7 @@ export function Comment({
   return (
     <>
       <div
-        className={cn("flex gap-3 py-3", className)}
+        className={cn(`group/comment relative flex gap-3 py-3`, className)}
         data-hasreply={containReply}
       >
         <span className="comment-avatar-wrap hidden sm:inline-block">
@@ -75,6 +79,14 @@ export function Comment({
             <span className="text-muted-foreground">
               {getRelativeDate(comment.createdAt!)}
             </span>
+            <div className="ms-auto">
+              {currentUser.id === comment.userId && (
+                <CommentActionBar
+                  comment={comment}
+                  className={`opacity-0 transition-opacity group-hover/comment:opacity-100`}
+                />
+              )}
+            </div>
           </div>
           <div>
             <p className="text-sm">{comment.content}</p>
