@@ -4,6 +4,7 @@ import { validateRequest } from "@/auth"
 import { createCommentSchema } from "@/lib/validations"
 import { insertComment, insertReply } from "@/schema/comment-fns"
 import { getPostById } from "@/schema/db-fns"
+import { createCommentReplyNotification } from "@/schema/notification-fns"
 import { CommentsPage } from "@/types"
 
 export async function createReplyAction({
@@ -40,6 +41,8 @@ export async function createReplyAction({
     postId: postId,
     replyCount: 0,
   } satisfies CommentsPage["data"][number]
+
+  createCommentReplyNotification(postId, data, commentId)
 
   return data
 }
