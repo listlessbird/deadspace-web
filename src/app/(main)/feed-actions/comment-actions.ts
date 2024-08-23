@@ -24,8 +24,12 @@ export async function createCommentAction({
 
   const { content: parsedContent } = createCommentSchema.parse({ content })
 
-  const newComment = await insertComment(parsedContent, user.id, postId)
-  createPostCommentNotification(postId, user)
+  const newComment = await insertComment(parsedContent, user.id, postId).then(
+    (res) => {
+      createPostCommentNotification(postId, user)
+      return res
+    },
+  )
   const data = {
     ...newComment,
     username: user.username,
