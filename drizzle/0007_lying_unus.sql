@@ -1,0 +1,1 @@
+ALTER TABLE "notifications" ADD COLUMN "resource_id" uuid NOT NULL;

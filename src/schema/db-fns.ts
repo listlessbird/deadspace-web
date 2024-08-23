@@ -147,7 +147,11 @@ function getBasePostForFeedQuery(currentUserId: string) {
       `,
       likes: sql<LikeData>`
       (
-        select json_build_object('likeCount', count(${schema.postLikesTable.postId}), 'isLiked', exists(
+        select json_build_object('likeCount', (
+      select count(*) 
+      from ${schema.postLikesTable}
+      where ${schema.postLikesTable.postId} = ${schema.postTable.id}
+    ), 'isLiked', exists(
           select 1 from ${schema.postLikesTable}
           where ${schema.postLikesTable.postId} = ${schema.postTable.id}
           and ${schema.postLikesTable.userId} = ${currentUserId}

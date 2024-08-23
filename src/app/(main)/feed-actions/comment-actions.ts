@@ -4,6 +4,7 @@ import { validateRequest } from "@/auth"
 import { createCommentSchema } from "@/lib/validations"
 import { insertComment } from "@/schema/comment-fns"
 import { getPostById } from "@/schema/db-fns"
+import { createPostCommentNotification } from "@/schema/notification-fns"
 import { CommentsPage } from "@/types"
 
 export async function createCommentAction({
@@ -24,7 +25,7 @@ export async function createCommentAction({
   const { content: parsedContent } = createCommentSchema.parse({ content })
 
   const newComment = await insertComment(parsedContent, user.id, postId)
-
+  createPostCommentNotification(postId, user)
   const data = {
     ...newComment,
     username: user.username,
