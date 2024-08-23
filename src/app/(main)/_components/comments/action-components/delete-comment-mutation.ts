@@ -38,6 +38,15 @@ export function useCommentDeleteMutation() {
         },
       )
 
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: ["post-comment-info"],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["comment-reply-info-query"],
+        }),
+      ])
+
       toast({
         description: "Post deleted",
       })
