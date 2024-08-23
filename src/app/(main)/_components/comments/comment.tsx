@@ -92,7 +92,7 @@ export function Comment({
             <p className="text-sm">{comment.content}</p>
           </div>
           {reply && <ReplyInput comment={comment} postId={comment.postId} />}
-          <div className="flex gap-5">
+          <div className="-ms-[7px] flex gap-5">
             <CommentLikeButton />
             <CommentReplyStat
               postId={comment.postId}
