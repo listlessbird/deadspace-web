@@ -2,6 +2,7 @@
 
 import { validateRequest } from "@/auth"
 import { createPostLike, dislikePost } from "@/schema/like-fns"
+import { createPostLikeNotification } from "@/schema/notification-fns"
 
 export async function likePostAction(postId: string) {
   const { user: currentUser } = await validateRequest()
@@ -9,7 +10,9 @@ export async function likePostAction(postId: string) {
   if (!currentUser) throw Error("Unauthorized")
 
   try {
-    await createPostLike(postId, currentUser.id)
+    await createPostLike(postId, currentUser.id).then(() => {
+      createPostLikeNotification(postId, currentUser)
+    })
   } catch (error) {
     console.error("[PostLikeAction] Error liking the post", error)
   }

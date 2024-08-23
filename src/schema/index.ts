@@ -2,6 +2,7 @@ import { db } from "@/db"
 import { eq, InferInsertModel, InferSelectModel, sql } from "drizzle-orm"
 import {
   AnyPgColumn,
+  boolean,
   pgEnum,
   pgTable,
   primaryKey,
@@ -168,6 +169,32 @@ export const commentsTable = pgTable("comments", {
   updatedAt: timestamp("updatedAt", {
     mode: "date",
     withTimezone: true,
+  }).defaultNow(),
+})
+
+export const notificationTypes = pgEnum("notification_types", [
+  "post-like",
+  "comment-like",
+  "post-comment",
+  "comment-reply",
+  "follow",
+  "mention",
+  "system",
+])
+
+export const notificationsTable = pgTable("notifications", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  recipientId: text("recipient_id")
+    .references(() => userTable.id, { onDelete: "cascade" })
+    .notNull(),
+  issuerId: text("issuer_id").default("0000-0000-0000-0000"),
+  type: notificationTypes("type").default("system").notNull(),
+  content: text("content").notNull(),
+  resourceId: uuid("resource_id").notNull(),
+  read: boolean("read").default(false).notNull(),
+  createdAt: timestamp("createdAt", {
+    withTimezone: true,
+    mode: "date",
   }).defaultNow(),
 })
 
