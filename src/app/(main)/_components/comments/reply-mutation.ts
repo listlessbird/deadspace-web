@@ -43,7 +43,7 @@ export function useOnReplySubmit(postId: string, parentId: string) {
         },
       )
       queryClient.invalidateQueries({
-        queryKey: ["comment-reply-info-query", postId],
+        queryKey: ["comment-reply-info-query", postId, parentId],
       })
       toast({
         description: "Reply created",
