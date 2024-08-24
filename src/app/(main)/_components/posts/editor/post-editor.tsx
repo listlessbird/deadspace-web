@@ -1,9 +1,9 @@
 "use client"
 
-import { EditorContent, useEditor } from "@tiptap/react"
+import { EditorContent, ReactNodeViewRenderer, useEditor } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
 import Placeholder from "@tiptap/extension-placeholder"
-import { useCallback, ClipboardEvent } from "react"
+import { useCallback, ClipboardEvent, useState, useEffect } from "react"
 import { useSession } from "@/app/(main)/hooks/useSession"
 import { UserAvatar } from "@/components/ui/user-avatar"
 import "./styles.css"
@@ -18,10 +18,18 @@ import {
 import { Loader2 } from "lucide-react"
 import { AnimatePresence, motion } from "framer-motion"
 import { useDropzone } from "@uploadthing/react"
+import { MentionBox } from "./mention-box"
+
+const mentionStyle =
+  "background-color: #e6f3ff;border-radius: 4px;padding: 2px 4px;color: #1a73e8;font-weight: 500;text-decoration: none;"
 
 export function PostEditor() {
-  const mutation = useOnPostSubmit()
+  const [showMentionBox, setShowMentionBox] = useState(false)
+  const [mentionBoxPosition, setMentionBoxPosition] = useState({ x: 0, y: 0 })
 
+  const [mention, setMention] = useState("")
+
+  const mutation = useOnPostSubmit()
   const { user } = useSession()
 
   const {
@@ -50,23 +58,34 @@ export function PostEditor() {
         placeholder: "Announce something to banish the emptyness here...",
       }),
     ],
-  })
+    onUpdate: ({ editor }) => {
+      const { from, to } = editor.state.selection
+      const text = editor.getText()
 
-  //   const input = useMemo(() => {
-  //     return editor?.getText({ blockSeparator: "\n" }) || ""
-  //   }, [editor])
+      const mentionMatch = text.match(/@(\w+)$/)
+      if (mentionMatch) {
+        const mentionString = mentionMatch[0].substring(1)
+        console.log(mentionString)
+        setMention(mentionString)
+
+        const coordinates = editor.view.coordsAtPos(from)
+        setMentionBoxPosition({ x: coordinates.left, y: coordinates.bottom })
+        setShowMentionBox(true)
+      } else {
+        setMention("")
+        setShowMentionBox(false)
+      }
+    },
+  })
 
   const input = editor?.getText({ blockSeparator: "\n" }) || ""
 
   const onSubmitPost = useCallback(async () => {
-    console.log({ input })
-    // await submitPost(input)
     mutation.mutate(
       {
         content: input,
         attachmentIds: attachments
           .map((a) => a.attachmentUploadId)
-          // dont pass {attachmentUploadId: undefined} to the action
           .filter(nonNullable),
       },
       {
@@ -80,7 +99,6 @@ export function PostEditor() {
 
   const onPaste = useCallback(
     (e: ClipboardEvent<HTMLInputElement>) => {
-      console.log("pasted", e.clipboardData)
       const files = Array.from(e.clipboardData.files).filter(
         (f) => f.type.startsWith("image") || f.type.startsWith("video"),
       )
@@ -88,6 +106,18 @@ export function PostEditor() {
     },
     [startUpload],
   )
+
+  const handleMentionSelect = (user) => {
+    editor
+      ?.chain()
+      .focus()
+      .insertContent({
+        type: "mention",
+        attrs: { id: user.username, label: user.username },
+      })
+      .run()
+    setShowMentionBox(false)
+  }
 
   return (
     <div className="flex flex-col gap-5 rounded-2xl bg-card p-5 shadow-sm">
@@ -109,23 +139,17 @@ export function PostEditor() {
         </div>
         <canvas className="blur-canvas hidden" />
       </div>
-      {/* <motion.div
-        initial={{ height: 0 }}
-        animate={{ height: height || "auto" }}
-        transition={{ duration: 0.3, ease: "easeInOut" }}
-        className="overflow-hidden"
-      >
-        <div ref={ref}>
-          <AnimatePresence initial={false} mode="popLayout">
-            {!!attachments.length && (
-              <Attachments
-                attachments={attachments}
-                removeAttachment={removeAttachment}
-              />
-            )}
-          </AnimatePresence>
+      {showMentionBox && (
+        <div
+          style={{
+            position: "absolute",
+            left: mentionBoxPosition.x,
+            top: mentionBoxPosition.y,
+          }}
+        >
+          <MentionBox onSelect={handleMentionSelect} mention={mention} />
         </div>
-      </motion.div> */}
+      )}
       <AnimatePresence initial={false} mode="popLayout">
         {attachments.length > 0 && (
           <motion.div
