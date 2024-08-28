@@ -35,10 +35,12 @@ export function AutocompleteDropdown<T extends string>({
         )
       }
 
-      if (e.key === "Enter") {
+      if (e.key === "Tab") {
         e.preventDefault()
+        e.stopPropagation()
         onSelect(suggestions[activeIndex])
         input?.focus()
+        // return false
       }
     }
 
