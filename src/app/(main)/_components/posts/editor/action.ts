@@ -37,11 +37,19 @@ export async function submitPost(content: {
   const data = {
     ...newPost,
     username: user.username,
-    displayName: user.displayName,
-    avatarUrl: user.avatarUrl,
-  }
+    displayName: user.displayName as string | null,
+    avatarUrl: user.avatarUrl as string | null,
+    bookmarks: { bookMarkCount: 0, isBookMarked: false },
+    comments: { commentCount: 0 },
+    likes: { likeCount: 0, isLiked: false },
+    attachments: (newPost.attachments ?? []).map((attachment) => ({
+      attachmentType: attachment.attachmentType as "video" | "image",
+      attachmentUrl: attachment.attachmentUrl as string,
+      ...(attachment.blurhash ? { blurhash: attachment.blurhash } : {}),
+    })),
+  } satisfies PostPage["data"][0]
 
   // revalidatePath("/")
 
-  return data as PostPage["data"][0]
+  return data
 }
