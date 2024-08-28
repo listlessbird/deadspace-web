@@ -1,6 +1,6 @@
 import kyInstance from "@/lib/ky"
 import { CommentsPage, PostPage } from "@/types"
-import { useInfiniteQuery } from "@tanstack/react-query"
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query"
 
 export function useInfinitePosts() {
   return useInfiniteQuery({
@@ -95,5 +95,17 @@ export function useInfiniteReplies(postId: string, parentId: string) {
         .json<CommentsPage>()
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor,
+  })
+}
+
+export function useUserQuery(query: string) {
+  return useQuery({
+    queryKey: ["user-query", query],
+    queryFn: () =>
+      kyInstance
+        .get(`/api/search/users/`, {
+          searchParams: { q: query },
+        })
+        .json<{ username: string; avatarUrl: string }[]>(),
   })
 }
