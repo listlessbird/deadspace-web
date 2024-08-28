@@ -3,7 +3,7 @@
 import { EditorContent, ReactNodeViewRenderer, useEditor } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
 import Placeholder from "@tiptap/extension-placeholder"
-import { useCallback, ClipboardEvent, useState, useEffect } from "react"
+import { useCallback, ClipboardEvent, useState, useEffect, useRef } from "react"
 import { useSession } from "@/app/(main)/hooks/useSession"
 import { UserAvatar } from "@/components/ui/user-avatar"
 import "./styles.css"
@@ -18,19 +18,62 @@ import {
 import { Loader2 } from "lucide-react"
 import { AnimatePresence, motion } from "framer-motion"
 import { useDropzone } from "@uploadthing/react"
-import { MentionBox } from "./mention-box"
+import { AutocompleteDropdown } from "@/app/(main)/_components/posts/editor/mention-complete"
 
-const mentionStyle =
-  "background-color: #e6f3ff;border-radius: 4px;padding: 2px 4px;color: #1a73e8;font-weight: 500;text-decoration: none;"
+const dummy = [
+  "alice",
+  "bob",
+  "carol",
+  "dave",
+  "eve",
+  "frank",
+  "grace",
+  "heidi",
+  "ivan",
+  "judy",
+  "kate",
+  "larry",
+  "mary",
+  "nancy",
+  "oliver",
+  "peter",
+  "quinn",
+  "rose",
+  "steve",
+  "tina",
+  "ulysses",
+  "victor",
+  "wendy",
+  "xander",
+  "yvonne",
+  "zack",
+]
 
 export function PostEditor() {
-  const [showMentionBox, setShowMentionBox] = useState(false)
-  const [mentionBoxPosition, setMentionBoxPosition] = useState({ x: 0, y: 0 })
-
-  const [mention, setMention] = useState("")
-
   const mutation = useOnPostSubmit()
   const { user } = useSession()
+
+  const [query, setQuery] = useState("")
+
+  const editorRef = useRef<HTMLDivElement | null>(null)
+
+  const [showUserSuggestions, setShowUserSuggestions] = useState(false)
+
+  const [users, setUsers] = useState<string[]>([])
+
+  // todo: replace this
+
+  useEffect(() => {
+    function getUsers(q: string) {
+      const u = dummy.filter((user) =>
+        user.toLowerCase().includes(q.toLowerCase()),
+      )
+
+      return u
+    }
+
+    setUsers(getUsers(query))
+  }, [query])
 
   const {
     attachments,
@@ -59,24 +102,57 @@ export function PostEditor() {
       }),
     ],
     onUpdate: ({ editor }) => {
-      const { from, to } = editor.state.selection
-      const text = editor.getText()
+      const { state } = editor
+      const { selection } = state
+      const { $from } = selection
 
-      const mentionMatch = text.match(/@(\w+)$/)
+      // Get the current line's text
+      const currentLineText = $from.nodeBefore?.textContent || ""
+
+      // Check if we're in a mention context
+      const mentionMatch = currentLineText.match(/@(\w*)$/)
       if (mentionMatch) {
-        const mentionString = mentionMatch[0].substring(1)
-        console.log(mentionString)
-        setMention(mentionString)
-
-        const coordinates = editor.view.coordsAtPos(from)
-        setMentionBoxPosition({ x: coordinates.left, y: coordinates.bottom })
-        setShowMentionBox(true)
+        const mentionString = mentionMatch[1]
+        if (mentionString.length > 1) {
+          console.log("mentionString", mentionString)
+          setQuery(mentionString)
+          setShowUserSuggestions(true)
+        }
       } else {
-        setMention("")
-        setShowMentionBox(false)
+        setQuery("")
+        setShowUserSuggestions(false)
       }
     },
   })
+
+  const handleSelect = useCallback(
+    (user: string) => {
+      if (editor) {
+        const { state } = editor
+        const { selection } = state
+        const { $from, $to } = selection
+
+        let start = $from.pos
+        let textBefore = $from.nodeBefore?.textContent || ""
+        let mentionStart = textBefore.lastIndexOf("@")
+
+        if (mentionStart !== -1) {
+          start = start - (textBefore.length - mentionStart)
+        }
+
+        editor
+          .chain()
+          .focus()
+          .deleteRange({ from: start, to: $to.pos })
+          .insertContent(`@${user} `)
+          .run()
+      }
+
+      setQuery("")
+      setShowUserSuggestions(false)
+    },
+    [editor],
+  )
 
   const input = editor?.getText({ blockSeparator: "\n" }) || ""
 
@@ -107,18 +183,6 @@ export function PostEditor() {
     [startUpload],
   )
 
-  const handleMentionSelect = (user) => {
-    editor
-      ?.chain()
-      .focus()
-      .insertContent({
-        type: "mention",
-        attrs: { id: user.username, label: user.username },
-      })
-      .run()
-    setShowMentionBox(false)
-  }
-
   return (
     <div className="flex flex-col gap-5 rounded-2xl bg-card p-5 shadow-sm">
       <div className="flex gap-5">
@@ -134,22 +198,23 @@ export function PostEditor() {
             editor={editor}
             className="max-h-[20rem] w-full overflow-y-auto rounded-xl bg-background px-5 py-3"
             onPaste={onPaste}
+            ref={editorRef}
           />
+
+          {showUserSuggestions && (
+            <AutocompleteDropdown
+              suggestions={users}
+              onSelect={handleSelect}
+              inputRef={editorRef}
+              onOpenChange={setShowUserSuggestions}
+            />
+          )}
+
           <input {...getInputProps()} />
         </div>
         <canvas className="blur-canvas hidden" />
       </div>
-      {showMentionBox && (
-        <div
-          style={{
-            position: "absolute",
-            left: mentionBoxPosition.x,
-            top: mentionBoxPosition.y,
-          }}
-        >
-          <MentionBox onSelect={handleMentionSelect} mention={mention} />
-        </div>
-      )}
+
       <AnimatePresence initial={false} mode="popLayout">
         {attachments.length > 0 && (
           <motion.div
