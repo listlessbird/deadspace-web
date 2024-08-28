@@ -19,35 +19,7 @@ import { Loader2 } from "lucide-react"
 import { AnimatePresence, motion } from "framer-motion"
 import { useDropzone } from "@uploadthing/react"
 import { AutocompleteDropdown } from "@/app/(main)/_components/posts/editor/mention-complete"
-
-const dummy = [
-  "alice",
-  "bob",
-  "carol",
-  "dave",
-  "eve",
-  "frank",
-  "grace",
-  "heidi",
-  "ivan",
-  "judy",
-  "kate",
-  "larry",
-  "mary",
-  "nancy",
-  "oliver",
-  "peter",
-  "quinn",
-  "rose",
-  "steve",
-  "tina",
-  "ulysses",
-  "victor",
-  "wendy",
-  "xander",
-  "yvonne",
-  "zack",
-]
+import { useUserQuery } from "@/app/(main)/hooks/queries"
 
 export function PostEditor() {
   const mutation = useOnPostSubmit()
@@ -59,21 +31,7 @@ export function PostEditor() {
 
   const [showUserSuggestions, setShowUserSuggestions] = useState(false)
 
-  const [users, setUsers] = useState<string[]>([])
-
-  // todo: replace this
-
-  useEffect(() => {
-    function getUsers(q: string) {
-      const u = dummy.filter((user) =>
-        user.toLowerCase().includes(q.toLowerCase()),
-      )
-
-      return u
-    }
-
-    setUsers(getUsers(query))
-  }, [query])
+  const { data, isLoading } = useUserQuery(query)
 
   const {
     attachments,
@@ -113,7 +71,7 @@ export function PostEditor() {
       const mentionMatch = currentLineText.match(/@(\w*)$/)
       if (mentionMatch) {
         const mentionString = mentionMatch[1]
-        if (mentionString.length > 1) {
+        if (mentionString.length > 0) {
           console.log("mentionString", mentionString)
           setQuery(mentionString)
           setShowUserSuggestions(true)
@@ -203,7 +161,7 @@ export function PostEditor() {
 
           {showUserSuggestions && (
             <AutocompleteDropdown
-              suggestions={users}
+              suggestions={data?.map((u) => u.username) || []}
               onSelect={handleSelect}
               inputRef={editorRef}
               onOpenChange={setShowUserSuggestions}

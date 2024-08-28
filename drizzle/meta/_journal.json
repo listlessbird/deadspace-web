@@ -71,6 +71,13 @@
       "when": 1724387757520,
       "tag": "0009_redundant_swarm",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1724885509208,
+      "tag": "0010_light_hex",
+      "breakpoints": true
     }
   ]
 }

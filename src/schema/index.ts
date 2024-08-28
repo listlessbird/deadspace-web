@@ -3,6 +3,7 @@ import { eq, InferInsertModel, InferSelectModel, sql } from "drizzle-orm"
 import {
   AnyPgColumn,
   boolean,
+  index,
   pgEnum,
   pgTable,
   primaryKey,
