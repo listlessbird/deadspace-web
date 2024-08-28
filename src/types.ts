@@ -33,5 +33,6 @@ export type UserViewType = {
   followerCount: number
 }
 
-declare const v: Prettify<UserViewType>
+// declare const v: Prettify<PostPage["data"][0]>
+
 //                ^?
