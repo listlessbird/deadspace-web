@@ -37,3 +37,4 @@ next-env.d.ts
 deadspace-py-env
 secrets
 scratch.mdx
+src/app/scratch
