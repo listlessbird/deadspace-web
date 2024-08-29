@@ -20,6 +20,7 @@ import { AnimatePresence, motion } from "framer-motion"
 import { useDropzone } from "@uploadthing/react"
 import { AutocompleteDropdown } from "@/app/(main)/_components/posts/editor/mention-complete"
 import { useUserQuery } from "@/app/(main)/hooks/queries"
+import { useDebounce } from "@/app/hooks/use-debounce"
 
 export function PostEditor() {
   const mutation = useOnPostSubmit()
@@ -27,11 +28,13 @@ export function PostEditor() {
 
   const [query, setQuery] = useState("")
 
+  const debouncedQuery = useDebounce(query)
+
   const editorRef = useRef<HTMLDivElement | null>(null)
 
   const [showUserSuggestions, setShowUserSuggestions] = useState(false)
 
-  const { data, isLoading } = useUserQuery(query)
+  const { data, isLoading } = useUserQuery(debouncedQuery)
 
   const {
     attachments,
