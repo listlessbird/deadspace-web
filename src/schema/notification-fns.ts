@@ -1,5 +1,5 @@
 import { db } from "@/db"
-import { getPostById } from "@/schema/db-fns"
+import { getPostById, getUserByUsername } from "@/schema/db-fns"
 import { notificationsTable } from "@/schema"
 import { User } from "lucia"
 import { CommentType } from "@/types"
@@ -106,6 +106,31 @@ export async function createCommentReplyNotification(
       // todo: build a link to the comment
       resourceId: postId,
       content: `@${reply.username} replied to your comment`,
+      recipientId: recipient,
+    })
+    .returning()
+
+  return notification[0]
+}
+
+export async function createMentionNotification(
+  resourceId: string,
+  mentionType: "post" | "comment",
+  mentionedBy: User,
+  mentionedUser: string,
+) {
+  const mentionedUserItem = await getUserByUsername(mentionedUser)
+
+  if (!mentionedUserItem) return
+
+  const recipient = mentionedUserItem.id
+
+  const notification = await db
+    .insert(notificationsTable)
+    .values({
+      type: "mention",
+      resourceId,
+      content: `@${mentionedBy.username} mentioned you in a ${mentionType}[${resourceId}]`,
       recipientId: recipient,
     })
     .returning()
