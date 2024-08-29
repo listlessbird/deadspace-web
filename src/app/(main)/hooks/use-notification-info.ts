@@ -8,7 +8,7 @@ export function useNotificationsInfo(initialState: NotificationsInfo) {
     queryFn: () =>
       kyInstance.get(`/api/notifications/unread`).json<NotificationsInfo>(),
     initialData: initialState,
-    staleTime: Infinity,
+    refetchInterval: 1000 * 60,
   })
 
   return q

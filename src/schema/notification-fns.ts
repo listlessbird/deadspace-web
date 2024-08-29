@@ -219,14 +219,19 @@ export async function getPaginatedNotifications({
   }
 }
 
-export async function markNotificationAsRead(notificationId: string) {
-  const notification = await db
+export async function markNotificationsAsRead(userId: string) {
+  const read = await db
     .update(notificationsTable)
     .set({ read: true })
-    .where(eq(notificationsTable.id, notificationId))
+    .where(
+      and(
+        eq(notificationsTable.recipientId, userId),
+        eq(notificationsTable.read, false),
+      ),
+    )
     .returning()
 
-  return notification[0]
+  return read
 }
 
 export async function getUnreadNotificationCount(userId: string) {
