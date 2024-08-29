@@ -1,12 +1,20 @@
+import { NotificationCount } from "@/app/(main)/notifications/notification-count"
+import { validateRequest } from "@/auth"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { getUnreadNotificationCount } from "@/schema/notification-fns"
 import { Bell, Bookmark, Home, Mail } from "lucide-react"
 import Link from "next/link"
 
-export function Menubar({
+export async function Menubar({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
+  const { user } = await validateRequest()
+
+  // user exists if this page is rendered
+  const unread = await getUnreadNotificationCount(user!.id)
+
   return (
     <div className={cn("", className)} {...props}>
       <Button
@@ -27,7 +35,13 @@ export function Menubar({
         asChild
       >
         <Link href={"/notifications"}>
-          <Bell />
+          <div className="relative">
+            <Bell />
+            <NotificationCount
+              className="absolute -left-1 -top-2"
+              initialState={{ count: unread }}
+            />
+          </div>
           <span className="hidden lg:inline">Notifications</span>
         </Link>
       </Button>
