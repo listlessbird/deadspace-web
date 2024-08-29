@@ -16,18 +16,6 @@ export async function submitPost(content: {
   const { content: parsedContent, attachmentIds } =
     createPostSchema.parse(content)
 
-  // const newPost = await db.execute(
-  //   sql`insert into ${schema.postTable} (content,user_id) values (${parsedContent}, ${user.id})`,
-  // )
-
-  // const newPost = await db
-  //   .insert(schema.postTable)
-  //   .values({
-  //     userId: user.id,
-  //     content: parsedContent,
-  //   })
-  //   .returning()
-
   const newPost = await createPost({
     userId: user.id,
     content: parsedContent,

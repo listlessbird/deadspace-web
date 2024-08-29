@@ -107,5 +107,7 @@ export function useUserQuery(query: string) {
           searchParams: { q: query },
         })
         .json<{ username: string; avatarUrl: string }[]>(),
+    staleTime: Infinity,
+    enabled: query.length > 0,
   })
 }
