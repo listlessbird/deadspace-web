@@ -1,5 +1,5 @@
 import { validateRequest } from "@/auth"
-import { getPaginatedNotifications } from "@/schema/notification-fns"
+import { getUnreadNotificationCount } from "@/schema/notification-fns"
 import { NextRequest, NextResponse } from "next/server"
 
 export async function GET(req: NextRequest) {
@@ -10,15 +10,9 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const searchParam = req.nextUrl.searchParams.get("c") || undefined
+    const count = await getUnreadNotificationCount(user.id)
 
-    const paginatedNotifications = await getPaginatedNotifications({
-      userId: user.id,
-      cursor: searchParam,
-      limit: 10,
-    })
-
-    return NextResponse.json(paginatedNotifications)
+    return NextResponse.json({ count })
   } catch (error) {
     console.error(error)
     return NextResponse.json(

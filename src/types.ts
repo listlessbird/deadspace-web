@@ -29,6 +29,8 @@ export type CommentMeta = { commentCount: number }
 
 export type BookmarkData = { bookMarkCount: number; isBookMarked: boolean }
 
+export type NotificationsInfo = { count: number }
+
 export type UserViewType = {
   id: string
   username: string

@@ -4,7 +4,7 @@ import { notificationsTable, userTable } from "@/schema"
 import { User } from "lucia"
 import { CommentType } from "@/types"
 import { getCommentById } from "@/schema/comment-fns"
-import { aliasedTable, and, desc, eq, lt } from "drizzle-orm"
+import { aliasedTable, and, count, desc, eq, lt } from "drizzle-orm"
 
 export async function createPostLikeNotification(
   postId: string,
@@ -217,4 +217,28 @@ export async function getPaginatedNotifications({
     data: notifications,
     nextCursor,
   }
+}
+
+export async function markNotificationAsRead(notificationId: string) {
+  const notification = await db
+    .update(notificationsTable)
+    .set({ read: true })
+    .where(eq(notificationsTable.id, notificationId))
+    .returning()
+
+  return notification[0]
+}
+
+export async function getUnreadNotificationCount(userId: string) {
+  const c = await db
+    .select({ count: count(notificationsTable.id) })
+    .from(notificationsTable)
+    .where(
+      and(
+        eq(notificationsTable.recipientId, userId),
+        eq(notificationsTable.read, false),
+      ),
+    )
+
+  return c[0].count
 }
