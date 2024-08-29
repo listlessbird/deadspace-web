@@ -1,8 +1,10 @@
 "use server"
 
 import { validateRequest } from "@/auth"
+import { extractUserMentions } from "@/lib/utils"
 import { createPostSchema } from "@/lib/validations"
 import { createPost } from "@/schema/db-fns"
+import { createMentionNotification } from "@/schema/notification-fns"
 import { PostPage } from "@/types"
 
 export async function submitPost(content: {
@@ -20,6 +22,18 @@ export async function submitPost(content: {
     userId: user.id,
     content: parsedContent,
     attachmentIds,
+  }).then((d) => {
+    new Promise((res, rej) => {
+      const mentions = extractUserMentions(parsedContent)
+
+      if (!mentions.length) return
+
+      for (const mention of mentions) {
+        createMentionNotification(d.id, "post", user, mention)
+      }
+    })
+
+    return d
   })
 
   const data = {

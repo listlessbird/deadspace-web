@@ -94,3 +94,9 @@ export async function encodeCompressedImageToBlurhash(
 
   return encode(imageData.data, imageData.width, imageData.height, 4, 4)
 }
+
+export function extractUserMentions(content: string): string[] {
+  const mentionRegex = /@(\w+)/g
+  const matches = content.match(mentionRegex)
+  return matches ? matches.map((match) => match.slice(1)) : []
+}
