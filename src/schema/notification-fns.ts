@@ -1,9 +1,10 @@
 import { db } from "@/db"
 import { getPostById, getUserByUsername } from "@/schema/db-fns"
-import { notificationsTable } from "@/schema"
+import { notificationsTable, userTable } from "@/schema"
 import { User } from "lucia"
 import { CommentType } from "@/types"
 import { getCommentById } from "@/schema/comment-fns"
+import { aliasedTable, and, desc, eq, lt } from "drizzle-orm"
 
 export async function createPostLikeNotification(
   postId: string,
@@ -30,6 +31,7 @@ export async function createPostLikeNotification(
       resourceId: postId,
       content: `Your post was liked by @${likedByUser.username}`,
       recipientId: recipient,
+      issuerId: likedByUser.id,
     })
     .returning()
 
@@ -63,6 +65,7 @@ export async function createPostCommentNotification(
       resourceId: postId,
       content: `@${commentCreatedBy.username} made a comment on your post`,
       recipientId: recipient,
+      issuerId: commentCreatedBy.id,
     })
     .returning()
 
@@ -107,6 +110,7 @@ export async function createCommentReplyNotification(
       resourceId: postId,
       content: `@${reply.username} replied to your comment`,
       recipientId: recipient,
+      issuerId: reply.userId,
     })
     .returning()
 
@@ -125,6 +129,11 @@ export async function createMentionNotification(
 
   const recipient = mentionedUserItem.id
 
+  if (recipient === mentionedBy.id) {
+    console.info("[createMentionNotification] User mentioned themselves")
+    return
+  }
+
   const notification = await db
     .insert(notificationsTable)
     .values({
@@ -132,8 +141,80 @@ export async function createMentionNotification(
       resourceId,
       content: `@${mentionedBy.username} mentioned you in a ${mentionType}[${resourceId}]`,
       recipientId: recipient,
+      issuerId: mentionedBy.id,
     })
     .returning()
 
   return notification[0]
+}
+
+export async function getNotifications(userId: string) {
+  const notifications = await db
+    .select()
+    .from(notificationsTable)
+    .where(
+      and(
+        eq(notificationsTable.read, false),
+        eq(notificationsTable.recipientId, userId),
+      ),
+    )
+
+  return notifications
+}
+
+export async function getPaginatedNotifications({
+  userId,
+  limit = 10,
+  cursor,
+}: {
+  userId: string
+  limit: number
+  cursor?: string | null
+}) {
+  let c: Date | undefined
+
+  if (cursor) {
+    c = new Date(cursor)
+  }
+
+  const issuerTable = aliasedTable(userTable, "issuer")
+
+  const notifications = await db
+    .select({
+      notification: notificationsTable,
+      recipient: {
+        id: userTable.id,
+        username: userTable.username,
+        displayName: userTable.displayName,
+        avatarUrl: userTable.avatarUrl,
+      },
+      issuer: {
+        id: issuerTable.id,
+        username: issuerTable.username,
+        displayName: issuerTable.displayName,
+        avatarUrl: issuerTable.avatarUrl,
+      },
+    })
+    .from(notificationsTable)
+    .leftJoin(userTable, eq(notificationsTable.recipientId, userTable.id))
+    .leftJoin(issuerTable, eq(notificationsTable.issuerId, userTable.id))
+    .where(
+      and(
+        eq(notificationsTable.recipientId, userId),
+        c ? lt(notificationsTable.createdAt, c) : undefined,
+      ),
+    )
+    .orderBy(desc(notificationsTable.createdAt))
+    .limit(10)
+
+  const hasNext = notifications.length === limit
+
+  const nextCursor = hasNext
+    ? `${notifications[notifications.length - 1].notification.createdAt?.toISOString()}`
+    : null
+
+  return {
+    data: notifications,
+    nextCursor,
+  }
 }

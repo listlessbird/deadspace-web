@@ -188,7 +188,12 @@ export const notificationsTable = pgTable("notifications", {
   recipientId: text("recipient_id")
     .references(() => userTable.id, { onDelete: "cascade" })
     .notNull(),
-  issuerId: text("issuer_id").default("0000-0000-0000-0000"),
+  // id of the user who did some action in the notification_types and triggered the notification
+  issuerId: text("issuer_id")
+    .references(() => userTable.id, {
+      onDelete: "cascade",
+    })
+    .notNull(),
   type: notificationTypes("type").default("system").notNull(),
   content: text("content").notNull(),
   resourceId: uuid("resource_id").notNull(),

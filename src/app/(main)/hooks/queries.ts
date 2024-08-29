@@ -1,5 +1,5 @@
 import kyInstance from "@/lib/ky"
-import { CommentsPage, PostPage } from "@/types"
+import { CommentsPage, NotificationsPage, PostPage } from "@/types"
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query"
 
 export function useInfinitePosts() {
@@ -93,6 +93,22 @@ export function useInfiniteReplies(postId: string, parentId: string) {
           pageParam ? { searchParams: { c: pageParam } } : {},
         )
         .json<CommentsPage>()
+    },
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
+  })
+}
+
+export function useInfiniteNotificationsQuery() {
+  return useInfiniteQuery({
+    queryKey: ["notifications", "infinite"],
+    initialPageParam: null as string | null,
+    queryFn: ({ pageParam }) => {
+      return kyInstance
+        .get(
+          `/api/notifications`,
+          pageParam ? { searchParams: { c: pageParam } } : {},
+        )
+        .json<NotificationsPage>()
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor,
   })
