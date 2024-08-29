@@ -5,6 +5,9 @@ import PostsSkelton from "@/components/skeletons/posts"
 import { InfiniteScrollWrapper } from "@/components/ui/infinite-scroll-wrapper"
 import { Loader2 } from "lucide-react"
 import { Notification } from "@/app/(main)/notifications/notification"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { markNotificationsAsReadAction } from "@/app/(main)/notifications/actions"
+import { useEffect } from "react"
 export function Notifications() {
   const {
     data: all,
@@ -14,6 +17,24 @@ export function Notifications() {
     isFetching,
     isFetchingNextPage,
   } = useInfiniteNotificationsQuery()
+
+  const queryClient = useQueryClient()
+
+  const { mutate } = useMutation({
+    mutationFn: markNotificationsAsReadAction,
+    onSuccess: () => {
+      queryClient.setQueryData(["notifications-info"], (prev) => ({
+        unreadCount: 0,
+      }))
+    },
+    onError(error, variables, context) {
+      console.error("Error while marking notifications as read", error)
+    },
+  })
+
+  useEffect(() => {
+    mutate()
+  }, [mutate])
 
   const notifications = all?.pages.flatMap((page) => page.data) ?? []
 
