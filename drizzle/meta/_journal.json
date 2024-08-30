@@ -85,6 +85,13 @@
       "when": 1724910115655,
       "tag": "0011_glossy_microbe",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1725004258399,
+      "tag": "0012_aromatic_thunderbolt_ross",
+      "breakpoints": true
     }
   ]
 }

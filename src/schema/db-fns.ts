@@ -445,6 +445,42 @@ export async function getUserByUsername(
   return result[0]
 }
 
+export async function getUserByGoogleId(
+  googleId: string,
+): Promise<UserViewType> {
+  const result = await db
+    .selectDistinct({
+      ...userInclude,
+      followerCount: sql<number>`count(distinct ${followerRelation.followFrom})`,
+      postCount: sql<number>`count(distinct ${postTable.id})`,
+    })
+    .from(userTable)
+    .leftJoin(followerRelation, eq(userTable.id, followerRelation.followTo))
+    .leftJoin(postTable, eq(userTable.id, postTable.userId))
+    .where(eq(userTable.googleId, googleId))
+    .groupBy(userTable.id)
+    .limit(1)
+
+  return result[0]
+}
+
+export async function getUserByEmail(email: string): Promise<UserViewType> {
+  const result = await db
+    .selectDistinct({
+      ...userInclude,
+      followerCount: sql<number>`count(distinct ${followerRelation.followFrom})`,
+      postCount: sql<number>`count(distinct ${postTable.id})`,
+    })
+    .from(userTable)
+    .leftJoin(followerRelation, eq(userTable.id, followerRelation.followTo))
+    .leftJoin(postTable, eq(userTable.id, postTable.userId))
+    .where(eq(userTable.googleId, email))
+    .groupBy(userTable.id)
+    .limit(1)
+
+  return result[0]
+}
+
 /**
  * Get the follower count of a user
  * @param userId the userId of the user whose follower count we need
