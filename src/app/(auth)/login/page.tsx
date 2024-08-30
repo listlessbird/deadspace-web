@@ -3,6 +3,8 @@ import { Metadata } from "next"
 import Link from "next/link"
 import LoginBanner from "@/assets/login_banner_tmp.webp"
 import Image from "next/image"
+import { GoogleSignInButton } from "@/app/(auth)/login/google-btn"
+import { Separator } from "@/components/ui/separator"
 
 export const metadata: Metadata = {
   title: "Login",
@@ -17,6 +19,8 @@ export default function Page() {
             Log in to the deadspace ☠️
           </h1>
           <div className="space-y-5">
+            <GoogleSignInButton />
+            <Separator />
             <Login />
             <Link
               href={"/signup"}
