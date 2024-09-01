@@ -1,0 +1,1 @@
+CREATE INDEX IF NOT EXISTS "post_search_idx" ON "posts" USING gin (to_tsvector('english', coalesce("content",'')));
