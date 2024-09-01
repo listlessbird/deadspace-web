@@ -111,18 +111,6 @@ function getBasePostForFeedQuery(currentUserId: string) {
   return db
     .select({
       ...postInclude,
-      // attachments: sql<
-      //   {
-      //     attachmentType: "image" | "video"
-      //     attachmentUrl: string
-      //     blurhash?: string
-      //   }[]
-      // >`coalesce(
-      //   json_agg(
-      //     json_build_object('attachmentType', ${schema.postAttachments.attachmentType}, 'attachmentUrl', ${schema.postAttachments.attachmentUrl}, 'blurhash', ${schema.postAttachments.blurhash})
-      //     ) FILTER  (WHERE ${schema.postAttachments.id} is not null), '[]'::json
-      //     )
-      // `
       attachments: sql<
         {
           attachmentType: "image" | "video"

@@ -1,5 +1,5 @@
 import { db } from "@/db"
-import { eq, InferInsertModel, InferSelectModel, sql } from "drizzle-orm"
+import { eq, InferInsertModel, InferSelectModel, SQL, sql } from "drizzle-orm"
 import {
   AnyPgColumn,
   boolean,
@@ -38,16 +38,25 @@ export const sessionTable = pgTable("session", {
   }).notNull(),
 })
 
-export const postTable = pgTable("posts", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  content: text("content"),
-  userId: text("user_id")
-    .references(() => userTable.id)
-    .notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
-    .notNull()
-    .defaultNow(),
-})
+export const postTable = pgTable(
+  "posts",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    content: text("content"),
+    userId: text("user_id")
+      .references(() => userTable.id)
+      .notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => ({
+    searchIdx: index("post_search_idx").using(
+      "gin",
+      sql`to_tsvector('english', coalesce(${t.content},''))`,
+    ),
+  }),
+)
 
 export type BasePostType = typeof postTable.$inferSelect
 export const followerRelation = pgTable(
