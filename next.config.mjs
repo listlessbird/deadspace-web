@@ -20,6 +20,14 @@ const nextConfig = {
       },
     ],
   },
+  rewrites: () => {
+    return [
+      {
+        source: "/tag/:tag",
+        destination: "/search?query=%23:tag",
+      },
+    ]
+  },
   output: "standalone",
 }
 
