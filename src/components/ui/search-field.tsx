@@ -2,11 +2,20 @@
 
 import { Input } from "@/components/ui/input"
 import { SearchIcon } from "lucide-react"
-import { useRouter } from "next/navigation"
-import { FormEvent, useCallback } from "react"
+import { usePathname, useRouter } from "next/navigation"
+import { FormEvent, useCallback, useEffect, useRef } from "react"
 
 export function SearchField() {
   const router = useRouter()
+  const pathname = usePathname()
+
+  const formRef = useRef<HTMLFormElement>(null)
+
+  useEffect(() => {
+    if (pathname !== "/search" && formRef.current) {
+      formRef.current.reset()
+    }
+  }, [pathname])
 
   const handleSubmit = useCallback(
     (e: FormEvent<HTMLFormElement>) => {
@@ -19,7 +28,7 @@ export function SearchField() {
     [router],
   )
   return (
-    <form onSubmit={handleSubmit} method="GET" action="/search">
+    <form ref={formRef} onSubmit={handleSubmit} method="GET" action="/search">
       <div className="relative">
         <Input name="query" placeholder="Search" className="pe-10" />
         <SearchIcon className="absolute right-3 top-1/2 -translate-y-1/2 transform text-muted-foreground" />
