@@ -1,5 +1,5 @@
 import { validateRequest } from "@/auth"
-import { findUser } from "@/schema/search-fns"
+import { findUserMeta } from "@/schema/search-fns"
 import { NextRequest, NextResponse } from "next/server"
 
 export async function GET(req: NextRequest) {
@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
 
     const query = req.nextUrl.searchParams.get("q") || ""
 
-    const search = await findUser(query)
+    const search = await findUserMeta(query)
 
     return NextResponse.json(search)
   } catch (error) {

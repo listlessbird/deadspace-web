@@ -13,7 +13,7 @@ import {
 import { BookmarkData, CommentMeta, LikeData, UserViewType } from "@/types"
 import { desc, eq, sql, lt, and, inArray } from "drizzle-orm"
 
-const userInclude = {
+export const userInclude = {
   id: userTable.id,
   username: userTable.username,
   displayName: userTable.displayName,

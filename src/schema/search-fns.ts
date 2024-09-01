@@ -1,20 +1,29 @@
 import { db } from "@/db"
 import {
   commentsTable,
+  followerRelation,
   postAttachments,
   postTable,
   schema,
   userTable,
 } from "@/schema/"
-import { postInclude } from "@/schema/db-fns"
+import { postInclude, userInclude } from "@/schema/db-fns"
 import { BookmarkData, CommentMeta, LikeData, PostType } from "@/types"
 import { desc, eq, ilike, sql } from "drizzle-orm"
 
-export async function findUser(query: string) {
+export async function findUserMeta(query: string) {
   const search = await db
-    .select({ username: userTable.username, avatarUrl: userTable.avatarUrl })
+    .select({
+      ...userInclude,
+      followerCount: sql<number>`count(distinct ${followerRelation.followFrom})`,
+      postCount: sql<number>`count(distinct ${postTable.id})`,
+    })
     .from(userTable)
+    .leftJoin(followerRelation, eq(userTable.id, followerRelation.followTo))
+    .leftJoin(postTable, eq(userTable.id, postTable.userId))
     .where(ilike(userTable.username, `%${query}%`))
+    .groupBy(userTable.id)
+    .limit(7)
 
   return search
 }

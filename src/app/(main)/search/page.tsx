@@ -1,5 +1,6 @@
 import { TrendingSidebar } from "@/app/(main)/_components/trending-topics-bar"
 import { PostResults } from "@/app/(main)/search/post-results"
+import { UserResults } from "@/app/(main)/search/user-results"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 
 export default function SearchResults({
@@ -23,7 +24,9 @@ export default function SearchResults({
               <TabsContent value="posts">
                 <PostResults query={query} />
               </TabsContent>
-              <TabsContent value="users">users</TabsContent>
+              <TabsContent value="users">
+                <UserResults query={query} />
+              </TabsContent>
             </Tabs>
           </div>
         </div>
