@@ -12,7 +12,7 @@ export default function SearchResults({
     <main className="flex w-full min-w-0 gap-5">
       <div className="w-full min-w-0 space-y-5">
         <div className="rounded-2xl bg-card p-5 shadow-sm">
-          <h1 className="text-center text-xl font-bold">
+          <h1 className="truncate text-center text-xl font-bold">
             Search results for: &quot;{query}&quot;
           </h1>
           <div className="my-2">
