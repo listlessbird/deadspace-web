@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "turbo": "docker-compose up postgres -d && next dev --turbo",
+    "turbo": "docker-compose up postgres -d && NODE_ENV=development next dev --turbo",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",

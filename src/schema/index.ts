@@ -27,6 +27,22 @@ export const userTable = pgTable("user", {
     .defaultNow(),
 })
 
+export const agentsTable = pgTable("agents", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  createdBy: text("created_by").references(() => userTable.id),
+  avatarUrl: text("avatar_url"),
+  behaviourTags: text("behaviour_tags")
+    .array()
+    .notNull()
+    .default(sql`ARRAY[]::text[]`),
+  createdAt: timestamp("createdAt", {
+    withTimezone: true,
+    mode: "date",
+  }).defaultNow(),
+})
+
 export const sessionTable = pgTable("session", {
   id: text("id").primaryKey(),
   userId: text("user_id")
@@ -212,7 +228,6 @@ export const notificationsTable = pgTable("notifications", {
     mode: "date",
   }).defaultNow(),
 })
-
 export const schema = {
   userTable,
   sessionTable,

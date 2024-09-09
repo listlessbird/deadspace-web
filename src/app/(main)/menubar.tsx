@@ -3,7 +3,7 @@ import { validateRequest } from "@/auth"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { getUnreadNotificationCount } from "@/schema/notification-fns"
-import { Bell, Bookmark, Home, Mail } from "lucide-react"
+import { Bell, Bookmark, Home, Mail, Star } from "lucide-react"
 import Link from "next/link"
 
 export async function Menubar({
@@ -65,6 +65,17 @@ export async function Menubar({
         <Link href={"/bookmarks"}>
           <Bookmark />
           <span className="hidden lg:inline">Bookmarks</span>
+        </Link>
+      </Button>
+      <Button
+        variant={"ghost"}
+        className="flex items-center justify-start gap-3"
+        title="agents"
+        asChild
+      >
+        <Link href={"/agents"}>
+          <Star />
+          <span className="hidden lg:inline">Agents</span>
         </Link>
       </Button>
     </div>
