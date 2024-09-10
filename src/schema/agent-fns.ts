@@ -1,6 +1,6 @@
 import { db } from "@/db"
 import { agentsTable } from "@/schema"
-import { and, desc, eq, lt } from "drizzle-orm"
+import { and, desc, eq, lt, sql } from "drizzle-orm"
 
 export async function createAgentInDb({
   name,
@@ -83,4 +83,27 @@ export async function getAgents(
   }
 
   return { agents, nextCursor }
+}
+
+export async function getAllAgentCount() {
+  const agentCount = await db.execute(
+    sql<{ agent_count: number }>`
+          select count(${agentsTable.id}) as agent_count
+          from ${agentsTable}
+        `.mapWith(Number),
+  )
+  console.log(agentCount)
+  return agentCount[0]["agent_count"] as number
+}
+
+export async function getAgentCountByUser(userId: string) {
+  const agentCount = await db.execute(
+    sql<{ agent_count: number }>`
+          select count(${agentsTable.id}) as agent_count
+          from ${agentsTable}
+          where ${agentsTable.createdBy} = ${userId}        
+        `.mapWith(Number),
+  )
+
+  return agentCount[0]["agent_count"] as number
 }

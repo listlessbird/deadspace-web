@@ -1,7 +1,7 @@
 "use client"
 
 import { follow, unFollow } from "@/app/(main)/feed-actions/follow-action"
-import { useFollowerInfo } from "@/app/(main)/hooks/useFollowInfo"
+import { useFollowerInfo } from "@/app/(main)/hooks/use-follower-info"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/components/ui/use-toast"
 import { FollowerData } from "@/types"

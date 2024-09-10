@@ -2,8 +2,8 @@
 
 import { FollowButton } from "@/app/(main)/_components/follow-button"
 import { FollowerCount } from "@/app/(main)/_components/follow-info"
-import { useFollowerInfo } from "@/app/(main)/hooks/useFollowInfo"
-import { useSession } from "@/app/(main)/hooks/useSession"
+import { useFollowerInfo } from "@/app/(main)/hooks/use-follower-info"
+import { useSession } from "@/app/(main)/hooks/use-session"
 import {
   Tooltip,
   TooltipContent,

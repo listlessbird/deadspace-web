@@ -1,7 +1,7 @@
 import { createReplyAction } from "@/app/(main)/_components/comments/reply-action"
 import { submitPost } from "@/app/(main)/_components/posts/editor/action"
 import { createCommentAction } from "@/app/(main)/feed-actions/comment-actions"
-import { useSession } from "@/app/(main)/hooks/useSession"
+import { useSession } from "@/app/(main)/hooks/use-session"
 import { useToast } from "@/components/ui/use-toast"
 import { CommentsPage, PostPage } from "@/types"
 import {

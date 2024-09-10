@@ -1,6 +1,6 @@
 import { Navbar } from "@/app/(main)/_components/navbar"
 import { QueryProvider } from "@/app/(main)/hooks/query-provider"
-import { SessionProvider } from "@/app/(main)/hooks/useSession"
+import { SessionProvider } from "@/app/(main)/hooks/use-session"
 import { Menubar } from "@/app/(main)/menubar"
 import { validateRequest } from "@/auth"
 import { redirect } from "next/navigation"

@@ -1,4 +1,4 @@
-import { useSession } from "@/app/(main)/hooks/useSession"
+import { useSession } from "@/app/(main)/hooks/use-session"
 import { useToast } from "@/components/ui/use-toast"
 import { useUploadThing } from "@/lib/ut"
 import { encodeCompressedImageToBlurhash } from "@/lib/utils"
