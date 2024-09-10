@@ -37,3 +37,11 @@ export const updateProfileSchema = z.object({
 })
 
 export type UpdateUserProfileType = z.infer<typeof updateProfileSchema>
+
+export const agentConfigSchema = z.object({
+  name: requiredString,
+  description: requiredString,
+  behaviouralTraits: z.array(z.string().min(3, "Minimum 3 characters")),
+})
+
+export type AgentConfigInput = z.infer<typeof agentConfigSchema>

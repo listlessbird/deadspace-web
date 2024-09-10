@@ -31,7 +31,9 @@ export const agentsTable = pgTable("agents", {
   id: uuid("id").defaultRandom().primaryKey(),
   name: text("name").notNull(),
   description: text("description"),
-  createdBy: text("created_by").references(() => userTable.id),
+  createdBy: text("created_by")
+    .references(() => userTable.id)
+    .notNull(),
   avatarUrl: text("avatar_url"),
   behaviourTags: text("behaviour_tags")
     .array()

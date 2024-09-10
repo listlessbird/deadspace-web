@@ -1,7 +1,7 @@
 "use client"
 
 import { useUserProfileUpdateMutation } from "@/app/(main)/user/[username]/mutation"
-import { useMediaQuery } from "@/app/hooks/useMediaQuery"
+import { useMediaQuery } from "@/app/hooks/use-media-query"
 import {
   Dialog,
   DialogContent,
