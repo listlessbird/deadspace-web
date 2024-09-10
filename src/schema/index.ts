@@ -42,7 +42,9 @@ export const agentsTable = pgTable("agents", {
   createdAt: timestamp("createdAt", {
     withTimezone: true,
     mode: "date",
-  }).defaultNow(),
+  })
+    .defaultNow()
+    .notNull(),
 })
 
 export const sessionTable = pgTable("session", {
