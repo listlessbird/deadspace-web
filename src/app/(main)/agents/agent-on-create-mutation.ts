@@ -21,7 +21,7 @@ export function useOnNewAgentSubmit() {
       }
 
       const queryFilter = {
-        queryKey: ["agents-list", "infinite"],
+        queryKey: ["agents-list", "infinite", "list"],
       } satisfies QueryFilters
 
       await queryClient.cancelQueries(queryFilter)
@@ -29,8 +29,8 @@ export function useOnNewAgentSubmit() {
         queryFilter,
         (oldData) => {
           if (!oldData) return
+          console.log(oldData)
           const firstPage = oldData?.pages[0]
-
           if (firstPage) {
             return {
               pageParams: oldData.pageParams,
@@ -48,10 +48,13 @@ export function useOnNewAgentSubmit() {
         },
       )
 
-      queryClient.invalidateQueries({
-        queryKey: queryFilter.queryKey,
-        predicate: (query) => !query.state.data,
+      await queryClient.invalidateQueries({
+        queryKey: ["agents-list", "infinite", "filter-count"],
+        predicate: (query) =>
+          !query.state.data || query.queryKey.includes("filter-count"),
       })
+
+      console.log("invalidated")
 
       toast({
         description: "Agent created",

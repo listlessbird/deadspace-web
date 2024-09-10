@@ -1,7 +1,7 @@
 "use client"
 
 import { logOut } from "@/app/(auth)/action"
-import { useSession } from "@/app/(main)/hooks/useSession"
+import { useSession } from "@/app/(main)/hooks/use-session"
 import {
   DropdownMenu,
   DropdownMenuContent,

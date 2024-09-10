@@ -13,6 +13,7 @@ export const PasswordInput = forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           type={shown ? "text" : "password"}
           className={cn("pe-10", className)}
+          autoComplete="current-password"
           {...props}
         />
         <button

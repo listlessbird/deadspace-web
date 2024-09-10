@@ -33,16 +33,21 @@ import {
   CredenzaTitle,
   CredenzaTrigger,
 } from "@/components/ui/credenza"
-import { createAgentAction } from "@/app/(main)/agents/actions"
-import { toast, useToast } from "@/components/ui/use-toast"
 import { AgentList } from "@/app/(main)/agents/agent-list"
 import { useOnNewAgentSubmit } from "@/app/(main)/agents/agent-on-create-mutation"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-export function Agents() {
-  const [showModal, setShowModal] = useState(false)
+import { useFilterCount } from "@/app/(main)/agents/use-filter-count"
 
+export function Agents({
+  initialFilterItemCounts,
+}: {
+  initialFilterItemCounts: { all: number; createdByYou: number }
+}) {
+  const [showModal, setShowModal] = useState(false)
   const [filter, setFilter] = useState<"all" | "createdByYou">("all")
+
+  const { data: filterItemCounts } = useFilterCount(initialFilterItemCounts)
 
   return (
     <div className="space-y-3">
@@ -55,12 +60,11 @@ export function Agents() {
             <button
               className="cursor-pointer"
               onClick={(e) => {
-                console.log("clicked-available")
                 console.log(filter)
                 setFilter("all")
               }}
             >
-              All (<span>??</span>)
+              All (<span>{filterItemCounts.all}</span>)
             </button>
           </Badge>
           <Badge
@@ -70,12 +74,11 @@ export function Agents() {
             <button
               className="cursor-pointer"
               onClick={(e) => {
-                console.log("clicked-createdByYou")
                 console.log(filter)
                 setFilter("createdByYou")
               }}
             >
-              Created by you (<span>??</span>)
+              Created by you (<span>{filterItemCounts.createdByYou}</span>)
             </button>
           </Badge>
         </div>
@@ -128,6 +131,9 @@ function AgentConfigForm({
       mutate(values, {
         onSuccess: () => {
           onClose?.(false)
+        },
+        onError: (error) => {
+          setError(error.name)
         },
       })
     },

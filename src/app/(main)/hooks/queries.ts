@@ -116,7 +116,7 @@ export function useInfiniteNotificationsQuery() {
 
 export function useInfiniteAgentsList(filter: string = "all") {
   return useInfiniteQuery({
-    queryKey: ["agents-list", "infinite", filter],
+    queryKey: ["agents-list", "infinite", "list"],
     initialPageParam: null as string | null,
     queryFn: ({ pageParam }) => {
       const opts = pageParam ? { c: pageParam } : null

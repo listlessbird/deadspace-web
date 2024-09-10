@@ -1,5 +1,5 @@
 import { submitPost } from "@/app/(main)/_components/posts/editor/action"
-import { useSession } from "@/app/(main)/hooks/useSession"
+import { useSession } from "@/app/(main)/hooks/use-session"
 import { useToast } from "@/components/ui/use-toast"
 import { PostPage } from "@/types"
 import {

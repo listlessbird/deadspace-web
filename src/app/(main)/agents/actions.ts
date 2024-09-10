@@ -2,7 +2,11 @@
 
 import { validateRequest } from "@/auth"
 import { AgentConfigInput, agentConfigSchema } from "@/lib/validations"
-import { createAgentInDb } from "@/schema/agent-fns"
+import {
+  createAgentInDb,
+  getAgentCountByUser,
+  getAllAgentCount,
+} from "@/schema/agent-fns"
 
 export async function createAgentAction(data: AgentConfigInput) {
   try {
@@ -25,6 +29,29 @@ export async function createAgentAction(data: AgentConfigInput) {
     return agent
   } catch (error) {
     console.error("[CreateAgentAction] Error", error)
+    return { error: "Something went wrong, Please try again later" }
+  }
+}
+
+export async function getFilterCount() {
+  try {
+    const { user } = await validateRequest()
+
+    if (!user) {
+      throw new Error("Unauthorized")
+    }
+
+    const [allAgentCount, agentsByUserCount] = await Promise.all([
+      getAllAgentCount(),
+      getAgentCountByUser(user.id),
+    ])
+
+    return {
+      all: allAgentCount,
+      createdByYou: agentsByUserCount,
+    }
+  } catch (error) {
+    console.error("[GetFilterCount] Error", error)
     return { error: "Something went wrong, Please try again later" }
   }
 }
