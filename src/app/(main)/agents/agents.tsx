@@ -38,11 +38,12 @@ import {
 import { createAgentAction } from "@/app/(main)/agents/actions"
 import { toast, useToast } from "@/components/ui/use-toast"
 import { AgentList } from "@/app/(main)/agents/agent-list"
+import { useOnNewAgentSubmit } from "@/app/(main)/agents/agent-on-create-mutation"
 export function Agents() {
   const [showModal, setShowModal] = useState(false)
 
   return (
-    <div>
+    <div className="space-y-3">
       <Credenza open={showModal} onOpenChange={setShowModal}>
         <CredenzaTrigger asChild>
           <Button>Create a new agent</Button>
@@ -70,7 +71,9 @@ function AgentConfigForm({
 }: {
   onClose?: Dispatch<SetStateAction<boolean>>
 }) {
-  const { toast } = useToast()
+  // const { toast } = useToast()
+
+  const { mutate, isPending } = useOnNewAgentSubmit()
 
   const form = useForm<AgentConfigInput>({
     resolver: zodResolver(agentConfigSchema),
@@ -81,25 +84,29 @@ function AgentConfigForm({
     },
   })
 
-  const [isPending, startTransition] = useTransition()
-
   const [error, setError] = useState<string>()
   const onSubmit = useCallback(
     async (values: AgentConfigInput) => {
-      const created = await createAgentAction(values)
-      if ("error" in created) {
-        setError(created?.error)
-      } else if (created.id) {
-        setError(undefined)
-        toast({
-          variant: "default",
-          description: "Agent created successfully",
-          title: "Agent created",
-        })
-        onClose?.(false)
-      }
+      // const created = await createAgentAction(values)
+      // if ("error" in created) {
+      //   setError(created?.error)
+      // } else if (created.id) {
+      //   setError(undefined)
+      //   toast({
+      //     variant: "default",
+      //     description: "Agent created successfully",
+      //     title: "Agent created",
+      //   })
+      //   onClose?.(false)
+      // }
+
+      mutate(values, {
+        onSuccess: () => {
+          onClose?.(false)
+        },
+      })
     },
-    [toast, onClose],
+    [onClose, mutate],
   )
   return (
     <Form {...form}>

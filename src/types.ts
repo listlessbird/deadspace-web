@@ -1,3 +1,4 @@
+import { getAgents } from "@/schema/agent-fns"
 import { getPaginatedComments } from "@/schema/comment-fns"
 import { getPaginatedPosts, getUserById } from "@/schema/db-fns"
 import { getPaginatedNotifications } from "@/schema/notification-fns"
@@ -14,6 +15,8 @@ export type CommentsPage = Awaited<ReturnType<typeof getPaginatedComments>>
 export type NotificationsPage = Awaited<
   ReturnType<typeof getPaginatedNotifications>
 >
+
+export type AgentsPage = Awaited<ReturnType<typeof getAgents>>
 
 export type NotificationType = NotificationsPage["data"][number]
 

@@ -1,5 +1,5 @@
 import kyInstance from "@/lib/ky"
-import { CommentsPage, NotificationsPage, PostPage } from "@/types"
+import { AgentsPage, CommentsPage, NotificationsPage, PostPage } from "@/types"
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query"
 
 export function useInfinitePosts() {
@@ -109,6 +109,19 @@ export function useInfiniteNotificationsQuery() {
           pageParam ? { searchParams: { c: pageParam } } : {},
         )
         .json<NotificationsPage>()
+    },
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
+  })
+}
+
+export function useInfiniteAgentsList() {
+  return useInfiniteQuery({
+    queryKey: ["agents-list", "infinite"],
+    initialPageParam: null as string | null,
+    queryFn: ({ pageParam }) => {
+      return kyInstance
+        .get(`/api/agents`, pageParam ? { searchParams: { c: pageParam } } : {})
+        .json<AgentsPage>()
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor,
   })

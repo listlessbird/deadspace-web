@@ -1,4 +1,5 @@
 import { validateRequest } from "@/auth"
+import { getAgents } from "@/schema/agent-fns"
 import { NextRequest, NextResponse } from "next/server"
 
 export async function GET(req: NextRequest) {
@@ -9,9 +10,11 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // const query = req.nextUrl.searchParams.get("q") || ""
+    const cursor = req.nextUrl.searchParams.get("c") || ""
 
-    return NextResponse.json({ message: "Hello World" })
+    const paginatedAgents = await getAgents(cursor, 10)
+    console.log(paginatedAgents)
+    return NextResponse.json(paginatedAgents)
   } catch (error) {
     console.error(error)
     return NextResponse.json(

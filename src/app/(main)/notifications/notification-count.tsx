@@ -12,7 +12,6 @@ export function NotificationCount({
   className?: string
 }) {
   const { data } = useNotificationsInfo(initialState)
-  console.log("did i render")
   return (
     <div
       className={cn(
