@@ -7,7 +7,7 @@ import { UserAvatar } from "@/components/ui/user-avatar"
 import { Loader2 } from "lucide-react"
 import Link from "next/link"
 
-export function AgentList() {
+export function AgentList({ filter }: { filter: string }) {
   const {
     data,
     fetchNextPage,
@@ -15,7 +15,7 @@ export function AgentList() {
     isFetching,
     isFetchingNextPage,
     status,
-  } = useInfiniteAgentsList()
+  } = useInfiniteAgentsList(filter)
 
   const agents = data?.pages.flatMap((page) => page.agents) || []
 
@@ -71,9 +71,6 @@ export function AgentList() {
           </div>
         </div>
       ))}
-      {/* <pre className="text-destructive">
-        <code>{JSON.stringify(agents, null, 2)}</code>
-      </pre> */}
       {isFetchingNextPage && <Loader2 className="mx-auto my-3 animate-spin" />}
     </InfiniteScrollWrapper>
   )

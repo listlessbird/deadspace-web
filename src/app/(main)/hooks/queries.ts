@@ -114,13 +114,19 @@ export function useInfiniteNotificationsQuery() {
   })
 }
 
-export function useInfiniteAgentsList() {
+export function useInfiniteAgentsList(filter: string = "all") {
   return useInfiniteQuery({
-    queryKey: ["agents-list", "infinite"],
+    queryKey: ["agents-list", "infinite", filter],
     initialPageParam: null as string | null,
     queryFn: ({ pageParam }) => {
+      const opts = pageParam ? { c: pageParam } : null
+
       return kyInstance
-        .get(`/api/agents`, pageParam ? { searchParams: { c: pageParam } } : {})
+        .get(
+          `/api/agents`,
+          // pageParam ? { searchParams: { c: pageParam, f: filter } } : {},
+          { searchParams: { f: filter }, ...opts },
+        )
         .json<AgentsPage>()
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor,
