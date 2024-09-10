@@ -1,6 +1,6 @@
 import { db } from "@/db"
 import { agentsTable } from "@/schema"
-import { desc, lt } from "drizzle-orm"
+import { and, desc, eq, lt } from "drizzle-orm"
 
 export async function createAgentInDb({
   name,
@@ -34,8 +34,19 @@ export async function createAgentInDb({
   }
 }
 
-export async function getAgents(cursor?: string, limit = 10) {
+type GetAgentsOptions = {
+  userId: string
+  filter?: string
+}
+
+export async function getAgents(
+  options: GetAgentsOptions,
+  limit = 10,
+  cursor?: string,
+) {
   let cursorDate: Date | undefined = undefined
+
+  const { userId, filter = "" } = options
 
   if (cursor) {
     cursorDate = new Date(cursor)
@@ -52,7 +63,14 @@ export async function getAgents(cursor?: string, limit = 10) {
       createdAt: agentsTable.createdAt,
     })
     .from(agentsTable)
-    .where(cursorDate ? lt(agentsTable.createdAt, cursorDate) : undefined)
+    .where(
+      and(
+        filter === "createdByYou"
+          ? eq(agentsTable.createdBy, userId)
+          : undefined,
+        cursorDate ? lt(agentsTable.createdAt, cursorDate) : undefined,
+      ),
+    )
     .limit(10)
     .orderBy(desc(agentsTable.createdAt))
 

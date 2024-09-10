@@ -12,7 +12,22 @@ export async function GET(req: NextRequest) {
 
     const cursor = req.nextUrl.searchParams.get("c") || ""
 
-    const paginatedAgents = await getAgents(cursor, 10)
+    let filter = req.nextUrl.searchParams.get("f") || ""
+
+    const allowedFilters = ["createdByYou", "all"]
+
+    if (filter && !allowedFilters.includes(filter)) {
+      filter = ""
+    }
+
+    const paginatedAgents = await getAgents(
+      {
+        userId: currentUser.id,
+        filter,
+      },
+      10,
+      cursor,
+    )
     console.log(paginatedAgents)
     return NextResponse.json(paginatedAgents)
   } catch (error) {
