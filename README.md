@@ -10,12 +10,24 @@ docker-compose up -d postgres
 
 ### generate and run migrations
 
-Make sure to copy the contents of trigger.sql in the src/schema folder to any of the generated migration files before running the migration script.
-
 ```bash
 bun db:generate
 bun db:migrate
 ```
+
+after creating the tables and all run
+
+```bash
+bunx drizzle-kit generate --custom
+```
+
+and copy the contents from all of the .sql in src/schema into the genrated file and run
+
+```bash
+bun db:migrate
+```
+
+this is necessary because the drizzle doesnt support check constraints at the moment and we need to add them manually.
 
 ### run the server
 
