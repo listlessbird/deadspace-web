@@ -9,6 +9,7 @@ import {
   userTable,
   commentsTable,
   postAttachments,
+  agentsTable,
 } from "@/schema"
 import { BookmarkData, CommentMeta, LikeData, UserViewType } from "@/types"
 import { desc, eq, sql, lt, and, inArray } from "drizzle-orm"
@@ -22,16 +23,27 @@ export const userInclude = {
   createdAt: userTable.createdAt,
 }
 
-export const postInclude = {
+// export const postInclude = {
+//   id: postTable.id,
+//   content: postTable.content,
+//   createdAt: postTable.createdAt,
+//   username: userTable.username || agentsTable.name,
+//   displayName: userTable.displayName || agentsTable.name,
+//   avatarUrl: userTable.avatarUrl || agentsTable.avatarUrl,
+//   userId: userTable.id || agentsTable.id,
+// }
+
+const postInclude = {
   id: postTable.id,
   content: postTable.content,
   createdAt: postTable.createdAt,
-  username: userTable.username,
-  displayName: userTable.displayName,
-  avatarUrl: userTable.avatarUrl,
-  userId: userTable.id,
+  username: sql`COALESCE(${userTable.username}, ${agentsTable.name})`,
+  displayName: sql`COALESCE(${userTable.displayName}, ${agentsTable.name})`,
+  avatarUrl: sql`COALESCE(${userTable.avatarUrl}, ${agentsTable.avatarUrl})`,
+  userId: postTable.userId,
+  agentId: postTable.agentId,
+  postType: postTable.type,
 }
-
 export async function getPostsByUser(userId: string) {
   const posts = await db
     .select(postInclude)
@@ -86,7 +98,8 @@ function getBasePostQuery() {
       // `,
     })
     .from(postTable)
-    .innerJoin(userTable, eq(postTable.userId, userTable.id))
+    .leftJoin(agentsTable, eq(postTable.agentId, agentsTable.id))
+    .leftJoin(userTable, eq(postTable.userId, userTable.id))
     .leftJoin(
       schema.postAttachments,
       eq(postTable.id, schema.postAttachments.postId),
@@ -103,6 +116,8 @@ function getBasePostQuery() {
       postInclude.id,
       postInclude.userId,
       postInclude.username,
+      postInclude.postType,
+      postInclude.agentId,
     )
   // .orderBy(desc(postTable.createdAt), desc(postTable.id))
 }
@@ -168,7 +183,8 @@ function getBasePostForFeedQuery(currentUserId: string) {
       `,
     })
     .from(postTable)
-    .innerJoin(userTable, eq(postTable.userId, userTable.id))
+    .leftJoin(agentsTable, eq(postTable.agentId, agentsTable.id))
+    .leftJoin(userTable, eq(postTable.userId, userTable.id))
     .leftJoin(
       schema.postAttachments,
       eq(postTable.id, schema.postAttachments.postId),
@@ -190,6 +206,8 @@ function getBasePostForFeedQuery(currentUserId: string) {
       postInclude.id,
       postInclude.userId,
       postInclude.username,
+      postInclude.postType,
+      postInclude.agentId,
     )
   // .orderBy(desc(postTable.createdAt), desc(postTable.id))
 }
@@ -601,7 +619,7 @@ export async function createPost({
   id: string
   createdAt: Date
   content: string | null
-  userId: string
+  userId: string | null
   attachments?: Pick<
     postAttachmentTableSelectType,
     "attachmentType" | "attachmentUrl" | "blurhash"
@@ -611,7 +629,7 @@ export async function createPost({
     const data = await db.transaction(async (tx) => {
       const post = await tx
         .insert(postTable)
-        .values({ content, userId })
+        .values({ content, userId, type: "user" })
         .returning()
 
       const postId = post[0].id
@@ -636,6 +654,7 @@ export async function createPost({
     .values({
       userId,
       content,
+      type: "user",
     })
     .returning()
 

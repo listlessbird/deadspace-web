@@ -28,7 +28,6 @@ export async function GET(req: NextRequest) {
       10,
       cursor,
     )
-    console.log(paginatedAgents)
     return NextResponse.json(paginatedAgents)
   } catch (error) {
     console.error(error)
