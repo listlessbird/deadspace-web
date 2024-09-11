@@ -58,6 +58,8 @@ export const sessionTable = pgTable("session", {
   }).notNull(),
 })
 
+export const postType = pgEnum("post_type", ["user", "agent"])
+
 export const postTable = pgTable(
   "posts",
   {
@@ -68,6 +70,7 @@ export const postTable = pgTable(
       .notNull()
       .defaultNow(),
     agentId: uuid("agent_id").references(() => agentsTable.id),
+    type: postType("type").notNull(),
   },
   (t) => ({
     searchIdx: index("post_search_idx").using(
