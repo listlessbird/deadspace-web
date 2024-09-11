@@ -119,13 +119,15 @@ export function useInfiniteAgentsList(filter: string = "all") {
     queryKey: ["agents-list", "infinite", "list"],
     initialPageParam: null as string | null,
     queryFn: ({ pageParam }) => {
-      const opts = pageParam ? { c: pageParam } : null
-
+      const searchParams: Record<string, string> = { f: filter }
+      if (pageParam) {
+        searchParams.c = pageParam
+      }
       return kyInstance
         .get(
           `/api/agents`,
           // pageParam ? { searchParams: { c: pageParam, f: filter } } : {},
-          { searchParams: { f: filter }, ...opts },
+          { searchParams },
         )
         .json<AgentsPage>()
     },

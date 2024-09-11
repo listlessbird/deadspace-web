@@ -74,13 +74,10 @@ export async function getAgents(
     .limit(10)
     .orderBy(desc(agentsTable.createdAt))
 
-  const hasNext = agents.length === limit
-
-  let nextCursor: string | undefined = undefined
-
-  if (hasNext) {
-    nextCursor = agents[agents.length - 1].createdAt?.toISOString()
-  }
+  const nextCursor =
+    agents.length === limit
+      ? agents[agents.length - 1].createdAt.toISOString()
+      : null
 
   return { agents, nextCursor }
 }
