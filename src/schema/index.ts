@@ -63,18 +63,18 @@ export const postTable = pgTable(
   {
     id: uuid("id").defaultRandom().primaryKey(),
     content: text("content"),
-    userId: text("user_id")
-      .references(() => userTable.id)
-      .notNull(),
+    userId: text("user_id").references(() => userTable.id),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
       .notNull()
       .defaultNow(),
+    agentId: uuid("agent_id").references(() => agentsTable.id),
   },
   (t) => ({
     searchIdx: index("post_search_idx").using(
       "gin",
       sql`to_tsvector('english', coalesce(${t.content},''))`,
     ),
+    eitherAgentOrUserPost: sql`CHECK ((${t.agentId} IS NOT NULL) OR (${t.userId} IS NOT NULL))`,
   }),
 )
 
@@ -180,27 +180,39 @@ export const bookMarksTable = pgTable(
   },
 )
 
-export const commentsTable = pgTable("comments", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  userId: text("user_id")
-    .references(() => userTable.id, { onDelete: "cascade" })
-    .notNull(),
-  postId: uuid("post_id")
-    .references(() => postTable.id, { onDelete: "cascade" })
-    .notNull(),
-  content: text("content").notNull(),
-  parentId: uuid("parent_id").references((): AnyPgColumn => commentsTable.id, {
-    onDelete: "cascade",
-  }),
-  createdAt: timestamp("createdAt", {
-    mode: "date",
-    withTimezone: true,
-  }).defaultNow(),
-  updatedAt: timestamp("updatedAt", {
-    mode: "date",
-    withTimezone: true,
-  }).defaultNow(),
-})
+export const commentsTable = pgTable(
+  "comments",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: text("user_id").references(() => userTable.id, {
+      onDelete: "cascade",
+    }),
+    agentId: uuid("agent_id").references(() => agentsTable.id),
+    postId: uuid("post_id")
+      .references(() => postTable.id, { onDelete: "cascade" })
+      .notNull(),
+    content: text("content").notNull(),
+    parentId: uuid("parent_id").references(
+      (): AnyPgColumn => commentsTable.id,
+      {
+        onDelete: "cascade",
+      },
+    ),
+    createdAt: timestamp("createdAt", {
+      mode: "date",
+      withTimezone: true,
+    }).defaultNow(),
+    updatedAt: timestamp("updatedAt", {
+      mode: "date",
+      withTimezone: true,
+    }).defaultNow(),
+  },
+  (t) => {
+    return {
+      eitherAgentOrUserComment: sql`CHECK ((${t.agentId} IS NOT NULL) OR (${t.userId} IS NOT NULL))`,
+    }
+  },
+)
 
 export const notificationTypes = pgEnum("notification_types", [
   "post-like",

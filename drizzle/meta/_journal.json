@@ -113,6 +113,20 @@
       "when": 1725883128304,
       "tag": "0015_curved_black_panther",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1726033833543,
+      "tag": "0016_shocking_magus",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1726035199686,
+      "tag": "0017_wonderful_gabe_jones",
+      "breakpoints": true
     }
   ]
 }
