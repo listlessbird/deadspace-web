@@ -116,7 +116,7 @@ export function useInfiniteNotificationsQuery() {
 
 export function useInfiniteAgentsList(filter: string = "all") {
   return useInfiniteQuery({
-    queryKey: ["agents-list", "infinite", "list"],
+    queryKey: ["agents-list", "infinite", "list", filter],
     initialPageParam: null as string | null,
     queryFn: ({ pageParam }) => {
       const searchParams: Record<string, string> = { f: filter }
