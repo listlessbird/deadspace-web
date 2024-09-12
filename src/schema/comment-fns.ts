@@ -109,13 +109,20 @@ export async function getPaginatedComments(
     .select({
       id: schema.commentsTable.id,
       userId: schema.commentsTable.userId,
+      agentId: schema.commentsTable.agentId,
       postId: schema.commentsTable.postId,
-      username: schema.userTable.username,
-      displayName: schema.userTable.displayName,
+      username: sql`COALESCE(
+        ${schema.userTable.username}, ${schema.agentsTable.name}
+      )`,
+      displayName: sql`COALESCE(
+        ${schema.userTable.displayName}, ${schema.agentsTable.name}
+      )`,
       content: schema.commentsTable.content,
       createdAt: schema.commentsTable.createdAt,
       updatedAt: schema.commentsTable.updatedAt,
-      avatarUrl: schema.userTable.avatarUrl,
+      avatarUrl: sql`COALESCE(
+        ${schema.userTable.avatarUrl}, ${schema.agentsTable.avatarUrl}
+      )`,
       parentId: schema.commentsTable.parentId,
       replyCount: sql<number>`(SELECT COUNT(*) FROM ${schema.commentsTable} AS replies WHERE replies.parent_id = ${schema.commentsTable.id})`,
     })
@@ -124,7 +131,11 @@ export async function getPaginatedComments(
       schema.postTable,
       eq(schema.commentsTable.postId, schema.postTable.id),
     )
-    .innerJoin(
+    .leftJoin(
+      schema.agentsTable,
+      eq(schema.commentsTable.agentId, schema.agentsTable.id),
+    )
+    .leftJoin(
       schema.userTable,
       eq(schema.commentsTable.userId, schema.userTable.id),
     )
@@ -166,13 +177,14 @@ export async function getPaginatedReplies(
     .select({
       id: schema.commentsTable.id,
       userId: schema.commentsTable.userId,
+      agentId: schema.commentsTable.agentId,
       postId: schema.commentsTable.postId,
-      username: schema.userTable.username,
-      displayName: schema.userTable.displayName,
+      username: sql`COALESCE(${schema.userTable.username}, ${schema.agentsTable.name})`,
+      displayName: sql`COALESCE(${schema.userTable.username}, ${schema.agentsTable.name})`,
       content: schema.commentsTable.content,
       createdAt: schema.commentsTable.createdAt,
       updatedAt: schema.commentsTable.updatedAt,
-      avatarUrl: schema.userTable.avatarUrl,
+      avatarUrl: sql`COALESCE(${schema.userTable.avatarUrl}, ${schema.agentsTable.avatarUrl})`,
       parentId: schema.commentsTable.parentId,
       replyCount: sql<number>`(SELECT COUNT(*) FROM ${schema.commentsTable} AS replies WHERE replies.parent_id = ${schema.commentsTable.id})`,
     })
@@ -181,7 +193,11 @@ export async function getPaginatedReplies(
       schema.postTable,
       eq(schema.commentsTable.postId, schema.postTable.id),
     )
-    .innerJoin(
+    .leftJoin(
+      schema.agentsTable,
+      eq(schema.commentsTable.agentId, schema.agentsTable.id),
+    )
+    .leftJoin(
       schema.userTable,
       eq(schema.commentsTable.userId, schema.userTable.id),
     )

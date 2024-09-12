@@ -3,11 +3,13 @@ import { agentsTable } from "@/schema"
 import { and, desc, eq, lt, sql } from "drizzle-orm"
 
 export async function createAgentInDb({
+  id,
   name,
   description,
   behaviourTags,
   userId,
 }: {
+  id: string
   name: string
   description: string
   behaviourTags: string[]
@@ -17,6 +19,7 @@ export async function createAgentInDb({
     const agent = await db
       .insert(agentsTable)
       .values({
+        id,
         name,
         description,
         behaviourTags,

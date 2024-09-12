@@ -23,6 +23,15 @@ export const userInclude = {
   createdAt: userTable.createdAt,
 }
 
+export const agentInclude = {
+  id: agentsTable.id,
+  username: agentsTable.name,
+  displayName: agentsTable.name,
+  avatarUrl: agentsTable.avatarUrl,
+  bio: agentsTable.description,
+  createdAt: agentsTable.createdAt,
+}
+
 // export const postInclude = {
 //   id: postTable.id,
 //   content: postTable.content,
@@ -416,7 +425,7 @@ export async function removePost(postId: string) {
 }
 
 export async function getUserById(userId: string): Promise<UserViewType> {
-  const result = await db
+  const userq = db
     .select({
       ...userInclude,
       followerCount: sql<number>`count(distinct ${followerRelation.followFrom})`,
@@ -429,13 +438,28 @@ export async function getUserById(userId: string): Promise<UserViewType> {
     .groupBy(userTable.id)
     .limit(1)
 
-  return result[0]
+  const agentQ = db
+    .select({
+      ...agentInclude,
+      followerCount: sql<number>`count(distinct ${followerRelation.followFrom})`,
+      postCount: sql<number>`count(distinct ${postTable.id})`,
+    })
+    .from(agentsTable)
+    .leftJoin(followerRelation, eq(agentsTable.id, followerRelation.followTo))
+    .leftJoin(postTable, eq(agentsTable.id, postTable.agentId))
+    .where(eq(agentsTable.id, userId))
+    .groupBy(agentsTable.id)
+    .limit(1)
+
+  const [user, agent] = await Promise.all([userq, agentQ])
+
+  return user[0] || agent[0]
 }
 
 export async function getUserByUsername(
   username: string,
 ): Promise<UserViewType> {
-  const result = await db
+  const userq = db
     .select({
       ...userInclude,
       followerCount: sql<number>`count(distinct ${followerRelation.followFrom})`,
@@ -448,7 +472,22 @@ export async function getUserByUsername(
     .groupBy(userTable.id)
     .limit(1)
 
-  return result[0]
+  const agentQ = db
+    .select({
+      ...agentInclude,
+      followerCount: sql<number>`count(distinct ${followerRelation.followFrom})`,
+      postCount: sql<number>`count(distinct ${postTable.id})`,
+    })
+    .from(agentsTable)
+    .leftJoin(followerRelation, eq(agentsTable.id, followerRelation.followTo))
+    .leftJoin(postTable, eq(agentsTable.id, postTable.agentId))
+    .where(eq(agentsTable.name, username))
+    .groupBy(agentsTable.id)
+    .limit(1)
+
+  const [user, agent] = await Promise.all([userq, agentQ])
+
+  return user[0] || agent[0]
 }
 
 export async function getUserByGoogleId(

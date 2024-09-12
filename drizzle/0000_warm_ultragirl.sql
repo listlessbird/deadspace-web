@@ -17,7 +17,7 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "agents" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"id" text PRIMARY KEY NOT NULL,
 	"name" text NOT NULL,
 	"description" text,
 	"created_by" text NOT NULL,
@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS "bookmarks" (
 CREATE TABLE IF NOT EXISTS "comments" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"user_id" text,
-	"agent_id" uuid,
+	"agent_id" text,
 	"post_id" uuid NOT NULL,
 	"content" text NOT NULL,
 	"parent_id" uuid,
@@ -85,7 +85,7 @@ CREATE TABLE IF NOT EXISTS "posts" (
 	"content" text,
 	"user_id" text,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
-	"agent_id" uuid,
+	"agent_id" text,
 	"type" "post_type" NOT NULL
 );
 --> statement-breakpoint
@@ -216,6 +216,38 @@ CREATE INDEX IF NOT EXISTS "post_search_idx" ON "posts" USING gin (to_tsvector('
 
 
 
+ALTER TABLE posts
+DROP CONSTRAINT IF EXISTS either_user_or_agent_post;
+
+ALTER TABLE posts
+ADD CONSTRAINT either_user_or_agent_post 
+CHECK (
+  (user_id IS NULL AND agent_id IS NOT NULL) OR 
+  (user_id IS NOT NULL AND agent_id IS NULL)
+);
+
+
+ALTER TABLE comments
+DROP CONSTRAINT IF EXISTS either_user_or_agent_comment;
+
+ALTER TABLE comments
+ADD CONSTRAINT either_user_or_agent_comment
+CHECK (
+  (user_id IS NULL AND agent_id IS NOT NULL) OR 
+  (user_id IS NOT NULL AND agent_id IS NULL)
+);
+
+ALTER TABLE follower_relation
+DROP CONSTRAINT IF EXISTS no_self_follow;
+
+ALTER TABLE follower_relation
+ADD CONSTRAINT no_self_follow
+CHECK (
+  follow_from != follow_to
+);
+
+
+
 CREATE OR REPLACE FUNCTION copy_user_avatar_to_agent()
     RETURNS TRIGGER AS $$
 BEGIN
@@ -250,35 +282,3 @@ $$ LANGUAGE PLPGSQL;
 CREATE
 OR REPLACE TRIGGER set_post_type BEFORE INSERT ON posts FOR EACH ROW
 EXECUTE FUNCTION assign_post_type ();
-
-
-ALTER TABLE posts
-DROP CONSTRAINT IF EXISTS either_user_or_agent_post;
-
-ALTER TABLE posts
-ADD CONSTRAINT either_user_or_agent_post 
-CHECK (
-  (user_id IS NULL AND agent_id IS NOT NULL) OR 
-  (user_id IS NOT NULL AND agent_id IS NULL)
-);
-
-
-ALTER TABLE comments
-DROP CONSTRAINT IF EXISTS either_user_or_agent_comment;
-
-ALTER TABLE comments
-ADD CONSTRAINT either_user_or_agent_comment
-CHECK (
-  (user_id IS NULL AND agent_id IS NOT NULL) OR 
-  (user_id IS NOT NULL AND agent_id IS NULL)
-);
-
-ALTER TABLE follower_relation
-DROP CONSTRAINT IF EXISTS no_self_follow;
-
-ALTER TABLE follower_relation
-ADD CONSTRAINT no_self_follow
-CHECK (
-  follow_from != follow_to
-);
-
