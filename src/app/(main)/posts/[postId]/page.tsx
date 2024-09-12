@@ -65,7 +65,7 @@ export default async function Page({
       </div>
       <div className="sticky top-[5rem] hidden h-fit w-80 flex-none lg:block">
         <Suspense fallback={<Loader2 className="mx-auto animate-spin" />}>
-          <PostUserInfo userId={post.userId} />
+          <PostUserInfo userId={post.userId! || post.agentId!} />
         </Suspense>
       </div>
     </main>

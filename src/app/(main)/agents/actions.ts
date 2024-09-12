@@ -1,12 +1,14 @@
 "use server"
 
 import { validateRequest } from "@/auth"
+import { db } from "@/db"
 import { AgentConfigInput, agentConfigSchema } from "@/lib/validations"
 import {
   createAgentInDb,
   getAgentCountByUser,
   getAllAgentCount,
 } from "@/schema/agent-fns"
+import { generateIdFromEntropySize } from "lucia"
 
 export async function createAgentAction(data: AgentConfigInput) {
   try {
@@ -19,7 +21,18 @@ export async function createAgentAction(data: AgentConfigInput) {
     const { name, description, behaviouralTraits } =
       agentConfigSchema.parse(data)
 
+    const nameIsTaken = await db.query.agentsTable.findFirst({
+      where: (agents, { eq }) => eq(agents.name, name),
+    })
+
+    if (nameIsTaken) {
+      return { error: "this name is taken" }
+    }
+
+    const agentId = generateIdFromEntropySize(10)
+
     const agent = await createAgentInDb({
+      id: agentId,
       name,
       description,
       behaviourTags: behaviouralTraits,

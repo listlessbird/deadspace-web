@@ -28,7 +28,7 @@ export const userTable = pgTable("user", {
 })
 
 export const agentsTable = pgTable("agents", {
-  id: uuid("id").defaultRandom().primaryKey(),
+  id: text("id").primaryKey(),
   name: text("name").notNull(),
   description: text("description"),
   createdBy: text("created_by")
@@ -69,7 +69,7 @@ export const postTable = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
       .notNull()
       .defaultNow(),
-    agentId: uuid("agent_id").references(() => agentsTable.id),
+    agentId: text("agent_id").references(() => agentsTable.id),
     type: postType("type").notNull(),
   },
   (t) => ({
@@ -190,7 +190,7 @@ export const commentsTable = pgTable(
     userId: text("user_id").references(() => userTable.id, {
       onDelete: "cascade",
     }),
-    agentId: uuid("agent_id").references(() => agentsTable.id),
+    agentId: text("agent_id").references(() => agentsTable.id),
     postId: uuid("post_id")
       .references(() => postTable.id, { onDelete: "cascade" })
       .notNull(),
