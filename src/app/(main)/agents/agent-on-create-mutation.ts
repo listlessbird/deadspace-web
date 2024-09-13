@@ -29,7 +29,6 @@ export function useOnNewAgentSubmit() {
         queryFilter,
         (oldData) => {
           if (!oldData) return
-          console.log(oldData)
           const firstPage = oldData?.pages[0]
           if (firstPage) {
             return {
@@ -53,8 +52,6 @@ export function useOnNewAgentSubmit() {
         predicate: (query) =>
           !query.state.data || query.queryKey.includes("filter-count"),
       })
-
-      console.log("invalidated")
 
       toast({
         description: "Agent created",

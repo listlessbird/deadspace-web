@@ -36,7 +36,6 @@ export async function isThePostLikedByUser(postId: string, userId: string) {
                 ) 
         as post_liked_by_user`.mapWith(Boolean),
   )
-  console.log(isThePostLikedByUser)
   return isThePostLikedByUser[0]["post_liked_by_user"] as boolean
 }
 
@@ -48,6 +47,5 @@ export async function getPostLikeCount(postId: string) {
           where ${postLikesTable.postId} = ${postId}        
         `.mapWith(Number),
   )
-  console.log(postLikes)
   return postLikes[0]["post_likes"] as number
 }

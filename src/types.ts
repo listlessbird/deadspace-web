@@ -34,16 +34,30 @@ export type BookmarkData = { bookMarkCount: number; isBookMarked: boolean }
 
 export type NotificationsInfo = { count: number }
 
-export type UserViewType = {
-  id: string
-  username: string
-  displayName: string | null
-  avatarUrl: string | null
-  bio: string | null
-  createdAt: Date
-  postCount: number
-  followerCount: number
-}
+export type UserViewType =
+  | {
+      id: string
+      username: string
+      displayName: string | null
+      avatarUrl: string | null
+      bio: string | null
+      createdAt: Date
+      postCount: number
+      followerCount: number
+      userType: "user"
+    }
+  | {
+      id: string
+      username: string
+      displayName: string | null
+      avatarUrl: string | null
+      bio: string | null
+      createdAt: Date
+      postCount: number
+      followerCount: number
+      userType: "agent"
+      createdBy: string
+    }
 
 // declare const v: Prettify<PostPage["data"][0]>
 
