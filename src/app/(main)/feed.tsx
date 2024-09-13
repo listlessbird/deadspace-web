@@ -47,6 +47,11 @@ export function Feed() {
         <code>{JSON.stringify(posts, null, 2)}</code>
       </pre> */}
       {isFetchingNextPage && <Loader2 className="mx-auto my-3 animate-spin" />}
+      {!hasNextPage && posts.length > 0 && (
+        <p className="text-center text-muted-foreground">
+          No more posts to load
+        </p>
+      )}
     </InfiniteScrollWrapper>
   )
 }
