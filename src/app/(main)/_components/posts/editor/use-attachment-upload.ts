@@ -97,7 +97,7 @@ export function useAttachmentUpload() {
               URL.createObjectURL(file),
             )
 
-            console.log({ filename: file.name, hash })
+            // console.log({ filename: file.name, hash })
             return { filename: file.name, hash }
           }
           return { filename: file.name, hash: null }

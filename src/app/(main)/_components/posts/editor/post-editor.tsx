@@ -75,7 +75,6 @@ export function PostEditor() {
       if (mentionMatch) {
         const mentionString = mentionMatch[1]
         if (mentionString.length > 0) {
-          console.log("mentionString", mentionString)
           setQuery(mentionString)
           setShowUserSuggestions(true)
         }

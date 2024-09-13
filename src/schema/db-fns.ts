@@ -30,6 +30,7 @@ export const agentInclude = {
   avatarUrl: agentsTable.avatarUrl,
   bio: agentsTable.description,
   createdAt: agentsTable.createdAt,
+  createdBy: agentsTable.createdBy,
 }
 
 // export const postInclude = {
@@ -328,8 +329,6 @@ export async function getPaginatedUserPosts(
       ? `${result[limit - 1].id}::${result[limit - 1].createdAt}`
       : null
 
-  console.log(result)
-
   return { data: result, nextCursor }
 }
 
@@ -458,8 +457,11 @@ export async function getUserById(userId: string): Promise<UserViewType> {
     .limit(1)
 
   const [user, agent] = await Promise.all([userq, agentQ])
-
-  return user[0] || agent[0]
+  if (typeof user[0] !== "undefined" && "id" in user[0]) {
+    return { ...user[0], userType: "user" }
+  } else {
+    return { ...agent[0], userType: "agent" }
+  }
 }
 
 export async function getUserByUsername(
@@ -493,7 +495,11 @@ export async function getUserByUsername(
 
   const [user, agent] = await Promise.all([userq, agentQ])
 
-  return user[0] || agent[0]
+  if (typeof user[0] !== "undefined" && "id" in user[0]) {
+    return { ...user[0], userType: "user" }
+  } else {
+    return { ...agent[0], userType: "agent" }
+  }
 }
 
 export async function getUserByGoogleId(
@@ -512,7 +518,7 @@ export async function getUserByGoogleId(
     .groupBy(userTable.id)
     .limit(1)
 
-  return result[0]
+  return { ...result[0], userType: "user" }
 }
 
 export async function getUserByEmail(email: string): Promise<UserViewType> {
@@ -529,7 +535,7 @@ export async function getUserByEmail(email: string): Promise<UserViewType> {
     .groupBy(userTable.id)
     .limit(1)
 
-  return result[0]
+  return { ...result[0], userType: "user" }
 }
 
 /**

@@ -4,11 +4,14 @@ import { TrendingSidebar } from "@/app/(main)/_components/trending-topics-bar"
 import { EditUserProfile } from "@/app/(main)/user/[username]/profile-edit-btn"
 import { UserPostFeed } from "@/app/(main)/user/[username]/user-posts"
 import { validateRequest } from "@/auth"
+import { Badge } from "@/components/ui/badge"
 import { Linkify } from "@/components/ui/links"
 import { Separator } from "@/components/ui/separator"
 import { UserAvatar } from "@/components/ui/user-avatar"
+import { UserLinkTooltip } from "@/components/ui/user-link-tooltip"
 import { formattedNumber } from "@/lib/utils"
 import {
+  getUserById,
   getUserByUsername,
   isCurrentUserFollowingTarget,
 } from "@/schema/db-fns"
@@ -94,6 +97,13 @@ async function UserProfile({
     isFollowing: await isCurrentUserFollowingTarget(user.id, currentUserId),
   }
 
+  let createdByUser: UserViewType | null = null
+
+  if (user.userType === "agent") {
+    createdByUser = await getUserById(user.createdBy)
+    console.log({ createdByUser })
+  }
+
   return (
     <div className="h-fit w-full space-y-5 rounded-xl bg-card p-5 shadow-sm">
       <UserAvatar
@@ -104,9 +114,14 @@ async function UserProfile({
       <div className="flex flex-wrap gap-3 sm:flex-nowrap">
         <div className="me-auto space-y-3">
           <div>
-            <h1 className="text-3xl font-bold">
-              {user.displayName || user.username}
-            </h1>
+            <div className="flex items-baseline justify-center gap-2">
+              <h1 className="text-3xl font-bold">
+                {user.displayName || user.username}
+              </h1>
+              {user.userType === "agent" && (
+                <Badge className="bg-blue-500 text-white">Agent</Badge>
+              )}
+            </div>
             <div className="text-muted-foreground">@{user.username}</div>
           </div>
           <p>Joined {formatDate(user.createdAt, "MMM d, yyyy")}</p>
@@ -127,6 +142,14 @@ async function UserProfile({
           <FollowButton userId={user.id} initialState={followersInitial} />
         )}
       </div>
+      {user.userType === "agent" && createdByUser?.username && (
+        <div>
+          agent created by{" "}
+          <UserLinkTooltip username={createdByUser?.username}>
+            @{createdByUser.username}
+          </UserLinkTooltip>
+        </div>
+      )}
       {user.bio && (
         <>
           <Separator />

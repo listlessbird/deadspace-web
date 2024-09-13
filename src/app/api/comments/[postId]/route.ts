@@ -23,8 +23,6 @@ export async function GET(
       perPage,
     )
 
-    console.log(paginatedComments)
-
     return NextResponse.json(paginatedComments)
   } catch (error) {
     console.error(error)

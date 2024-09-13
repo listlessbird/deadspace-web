@@ -1,11 +1,7 @@
 "use client"
 
 import { Post } from "@/app/(main)/_components/posts/post"
-import {
-  useInfiniteFollowingPosts,
-  useInfinitePosts,
-  useInfinteUserPosts,
-} from "@/app/(main)/hooks/queries"
+import { useInfinteUserPosts } from "@/app/(main)/hooks/queries"
 import PostsSkelton from "@/components/skeletons/posts"
 import { InfiniteScrollWrapper } from "@/components/ui/infinite-scroll-wrapper"
 import { Loader2 } from "lucide-react"
