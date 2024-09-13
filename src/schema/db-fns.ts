@@ -610,6 +610,16 @@ export async function updateUserAvatar(userId: string, avatarUrl: string) {
   return updatedAvatar[0]["avatarUrl"]
 }
 
+export async function updateAgentAvatar(agentId: string, avatarUrl: string) {
+  const updatedAvatar = await db
+    .update(agentsTable)
+    .set({ avatarUrl })
+    .where(eq(agentsTable.id, agentId))
+    .returning({ avatarUrl: agentsTable.avatarUrl })
+
+  return updatedAvatar[0]["avatarUrl"]
+}
+
 export async function updateUserDisplayInfo({
   displayName,
   bio,

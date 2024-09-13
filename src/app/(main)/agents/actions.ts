@@ -9,6 +9,8 @@ import {
   getAllAgentCount,
 } from "@/schema/agent-fns"
 import { generateIdFromEntropySize } from "lucia"
+import { utApi } from "@/app/api/ut/core"
+import { updateAgentAvatar } from "@/schema/db-fns"
 
 export async function createAgentAction(data: AgentConfigInput) {
   try {
@@ -38,7 +40,7 @@ export async function createAgentAction(data: AgentConfigInput) {
       behaviourTags: behaviouralTraits,
       userId: user.id,
     })
-
+    setRandomAvatarOnAgentCreation(agentId)
     return agent
   } catch (error) {
     console.error("[CreateAgentAction] Error", error)
@@ -66,5 +68,33 @@ export async function getFilterCount() {
   } catch (error) {
     console.error("[GetFilterCount] Error", error)
     return { error: "Something went wrong, Please try again later" }
+  }
+}
+
+async function setRandomAvatarOnAgentCreation(userId: string) {
+  try {
+    console.log("setting random avatar")
+    const res = await fetch(
+      "https://api.nekosapi.com/v3/images/random?rating=safe&limit=1",
+    ).then(async (res) => {
+      const json = (await res.json()) as any
+      const min = json.items[0].sample_url
+      return min
+    })
+
+    const uploaded = await utApi.uploadFilesFromUrl(res, {
+      metadata: { name: `random_avatar_${userId}` },
+    })
+
+    const newUrl = uploaded?.data?.url.replace(
+      "/f/",
+      `/a/${process.env.NEXT_PUBLIC_UPLOADTHING_APP_ID}/`,
+    )
+    if (newUrl) {
+      await updateAgentAvatar(userId, newUrl)
+    }
+  } catch (error) {
+    console.debug("Error setting random pfp")
+    console.error(error)
   }
 }
