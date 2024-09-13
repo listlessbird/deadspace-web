@@ -80,8 +80,16 @@ export async function signUp(creds: SignUpInput): Promise<{ error: string }> {
 async function setRandomAvatarOnCreation(userId: string) {
   try {
     console.log("setting random avatar")
-    const randomPfp =
-      "https://api.nekosapi.com/v3/images/random/file?rating=safe"
+    // const randomPfp =
+    //   "https://api.nekosapi.com/v3/images/random/file?rating=safe"
+
+    const randomPfp = await fetch(
+      "https://api.nekosapi.com/v3/images/random?rating=safe&limit=1",
+    ).then(async (res) => {
+      const json = (await res.json()) as any
+      const min = json.items[0].sample_url
+      return min
+    })
 
     const uploaded = await utApi.uploadFilesFromUrl(randomPfp, {
       metadata: { name: `random_avatar_${userId}` },
