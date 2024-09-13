@@ -236,18 +236,18 @@ export async function getPaginatedPosts(
   let q = getPaginatedBasePostQuery(currentUserId).limit(limit)
 
   if (cursor) {
-    // cursor is in the format postId:createdAt
+    // cursor is in the format postId::createdAt
 
-    const [cursorId, cursorDate] = cursor.split(":")
-
-    q.where(lt(postTable.createdAt, new Date(cursorDate)))
+    const [cursorId, cursorDate] = cursor.split("::")
+    const date = new Date(cursorDate)
+    q.where(lt(postTable.createdAt, date))
   }
 
   const result = await q
 
   const nextCursor =
     result.length === limit
-      ? `${result[limit - 1].id}:${result[limit - 1].createdAt}`
+      ? `${result[limit - 1].id}::${result[limit - 1].createdAt.toString()}`
       : null
 
   return {
