@@ -12,7 +12,7 @@ import {
   agentsTable,
 } from "@/schema"
 import { BookmarkData, CommentMeta, LikeData, UserViewType } from "@/types"
-import { desc, eq, sql, lt, and, inArray } from "drizzle-orm"
+import { desc, eq, sql, lt, and, inArray, or } from "drizzle-orm"
 
 export const userInclude = {
   id: userTable.id,
@@ -264,7 +264,7 @@ export async function getPaginatedPostsForFollowingFeed(
   let cdate: Date | undefined
 
   if (cursor) {
-    const [, cursorDate] = cursor.split(":")
+    const [, cursorDate] = cursor.split("::")
 
     cdate = new Date(cursorDate)
   }
@@ -285,7 +285,7 @@ export async function getPaginatedPostsForFollowingFeed(
   const result = await q
   const nextCursor =
     result.length === limit
-      ? `${result[limit - 1].id}:${result[limit - 1].createdAt}`
+      ? `${result[limit - 1].id}::${result[limit - 1].createdAt}`
       : null
 
   return {
@@ -303,23 +303,29 @@ export async function getPaginatedUserPosts(
   let cdate: Date | undefined
 
   if (cursor) {
-    const [, cursorDate] = cursor.split(":")
+    const [, cursorDate] = cursor.split("::")
 
     cdate = new Date(cursorDate)
   }
 
   const result = await getPaginatedBasePostQuery(currentUserId)
     .where(
-      and(
-        eq(postTable.userId, userId),
-        cdate ? lt(postTable.createdAt, cdate) : undefined,
+      or(
+        and(
+          eq(postTable.userId, userId),
+          cdate ? lt(postTable.createdAt, cdate) : undefined,
+        ),
+        and(
+          eq(postTable.agentId, userId),
+          cdate ? lt(postTable.createdAt, cdate) : undefined,
+        ),
       ),
     )
     .limit(limit)
 
   const nextCursor =
     result.length === limit
-      ? `${result[limit - 1].id}:${result[limit - 1].createdAt}`
+      ? `${result[limit - 1].id}::${result[limit - 1].createdAt}`
       : null
 
   console.log(result)
