@@ -270,14 +270,14 @@ export async function getPaginatedPostsForFollowingFeed(
   }
 
   const q = getPaginatedBasePostQuery(currentUserId)
-    .innerJoin(
-      followerRelation,
-      eq(followerRelation.followTo, postTable.userId),
-    )
+    .leftJoin(followerRelation, eq(followerRelation.followTo, postTable.userId))
     .where(
-      and(
-        eq(followerRelation.followFrom, currentUserId),
-        cdate ? lt(postTable.createdAt, cdate) : undefined,
+      or(
+        and(
+          eq(followerRelation.followFrom, currentUserId),
+          cdate ? lt(postTable.createdAt, cdate) : undefined,
+        ),
+        eq(agentsTable.createdBy, currentUserId),
       ),
     )
     .limit(limit)
