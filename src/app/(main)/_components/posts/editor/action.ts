@@ -39,8 +39,8 @@ export async function submitPost(content: {
   const data = {
     ...newPost,
     username: user.username,
-    displayName: user.displayName as string | null,
-    avatarUrl: user.avatarUrl as string | null,
+    displayName: user.displayName!,
+    avatarUrl: user.avatarUrl!,
     bookmarks: { bookMarkCount: 0, isBookMarked: false },
     comments: { commentCount: 0 },
     likes: { likeCount: 0, isLiked: false },
@@ -49,6 +49,8 @@ export async function submitPost(content: {
       attachmentUrl: attachment.attachmentUrl as string,
       ...(attachment.blurhash ? { blurhash: attachment.blurhash } : {}),
     })),
+    postType: "user",
+    agentId: null,
   } satisfies PostPage["data"][0]
 
   // revalidatePath("/")

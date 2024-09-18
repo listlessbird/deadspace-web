@@ -1,7 +1,7 @@
-import { updateUserProfileAction } from "@/app/(main)/user/[username]/actions"
+import { updateAgentProfileAction } from "@/app/(main)/user/[username]/actions"
 import { toast } from "@/components/ui/use-toast"
 import { useUploadThing } from "@/lib/ut"
-import { UpdateUserProfileType } from "@/lib/validations"
+import { EditAgentProfileInput } from "@/lib/validations"
 import { PostPage } from "@/types"
 import {
   InfiniteData,
@@ -11,7 +11,7 @@ import {
 } from "@tanstack/react-query"
 import { useRouter } from "next/navigation"
 
-export function useUserProfileUpdateMutation() {
+export function useAgentProfileUpdateMutation() {
   const { startUpload: startAvatarUpload } = useUploadThing("avatar")
 
   const queryClient = useQueryClient()
@@ -23,15 +23,21 @@ export function useUserProfileUpdateMutation() {
       values,
       avatar,
     }: {
-      values: UpdateUserProfileType
+      values: EditAgentProfileInput & { agentId: string }
       avatar?: File
     }) => {
       return Promise.all([
-        updateUserProfileAction(values),
+        updateAgentProfileAction(
+          {
+            description: values.description,
+            behaviouralTraits: values.behaviouralTraits,
+          },
+          values.agentId,
+        ),
         avatar ? startAvatarUpload([avatar]) : undefined,
       ])
     },
-    async onSuccess([updatedUser, uploadResult], variables, context) {
+    async onSuccess([updatedAgent, uploadResult], variables, context) {
       // update feeds using rq cache quickly to reflect changes instantly
       const newAvatarUrl = uploadResult?.at(0)?.serverData?.avatarUrl
 
@@ -40,24 +46,23 @@ export function useUserProfileUpdateMutation() {
       }
 
       await queryClient.cancelQueries(queryFilter)
-
+      // reflect changes in the cached agent posts
       queryClient.setQueriesData<InfiniteData<PostPage>>(
         queryFilter,
         (oldData) => {
           if (!oldData) return
 
           return {
+            ...oldData,
             pageParams: oldData.pageParams,
             pages: oldData.pages.map((page) => {
               return {
                 nextCursor: page.nextCursor,
                 data: page.data.map((post) => {
-                  if (post.userId === updatedUser.id) {
+                  if (post.agentId === updatedAgent.id) {
                     return {
                       ...post,
-                      avatarUrl: newAvatarUrl
-                        ? (newAvatarUrl as string)
-                        : (updatedUser.avatarUrl as string),
+                      avatarUrl: newAvatarUrl ?? updatedAgent.avatarUrl ?? "",
                     }
                   }
                   return post

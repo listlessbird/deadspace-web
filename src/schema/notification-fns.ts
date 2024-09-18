@@ -19,6 +19,13 @@ export async function createPostLikeNotification(
 
   const recipient = post.userId
 
+  if (!recipient) {
+    console.info(
+      "[createLikeNotification] Post has no recipient. likely an agent post",
+    )
+    return
+  }
+
   if (recipient === likedByUser.id) {
     console.info("[createLikeNotification] User liked their own post")
     return
@@ -50,6 +57,13 @@ export async function createPostCommentNotification(
   }
 
   const recipient = post.userId
+
+  if (!recipient) {
+    console.info(
+      "[createPostCommentNotification] Post has no recipient. likely an agent post",
+    )
+    return
+  }
 
   if (recipient === commentCreatedBy.id) {
     console.info(
@@ -95,10 +109,22 @@ export async function createCommentReplyNotification(
 
   const recipient = parent.userId
 
+  if (!recipient) {
+    console.info(
+      "[createPostCommentNotification] Parent comment has no recipient. likely an agent post comment",
+    )
+    return
+  }
+
   if (recipient === reply.userId) {
     console.info(
       "[createPostCommentNotification] User replied to their own comment",
     )
+    return
+  }
+
+  if (!reply.userId) {
+    console.info("[createPostCommentNotification] agent replied to a comment")
     return
   }
 

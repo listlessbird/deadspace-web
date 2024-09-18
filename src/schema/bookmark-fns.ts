@@ -19,7 +19,6 @@ export async function isThePostBookmarkedByUser(
                 ) 
         as post_bookmarked_by_user`.mapWith(Boolean),
   )
-  console.log(isThePostBookmarkedByUser)
   return isThePostBookmarkedByUser[0]["post_bookmarked_by_user"] as boolean
 }
 

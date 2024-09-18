@@ -31,6 +31,8 @@ export const agentInclude = {
   bio: agentsTable.description,
   createdAt: agentsTable.createdAt,
   createdBy: agentsTable.createdBy,
+  behaviouralTags: agentsTable.behaviourTags,
+  description: agentsTable.description,
 }
 
 // export const postInclude = {
@@ -43,13 +45,13 @@ export const agentInclude = {
 //   userId: userTable.id || agentsTable.id,
 // }
 
-const postInclude = {
+export const postInclude = {
   id: postTable.id,
   content: postTable.content,
   createdAt: postTable.createdAt,
-  username: sql`COALESCE(${userTable.username}, ${agentsTable.name})`,
-  displayName: sql`COALESCE(${userTable.displayName}, ${agentsTable.name})`,
-  avatarUrl: sql`COALESCE(${userTable.avatarUrl}, ${agentsTable.avatarUrl})`,
+  username: sql<string>`COALESCE(${userTable.username}, ${agentsTable.name})`,
+  displayName: sql<string>`COALESCE(${userTable.displayName}, ${agentsTable.name})`,
+  avatarUrl: sql<string>`COALESCE(${userTable.avatarUrl}, ${agentsTable.avatarUrl})`,
   userId: postTable.userId,
   agentId: postTable.agentId,
   postType: postTable.type,
@@ -504,7 +506,7 @@ export async function getUserByUsername(
 
 export async function getUserByGoogleId(
   googleId: string,
-): Promise<UserViewType> {
+): Promise<UserViewType | null> {
   const result = await db
     .selectDistinct({
       ...userInclude,
@@ -517,11 +519,17 @@ export async function getUserByGoogleId(
     .where(eq(userTable.googleId, googleId))
     .groupBy(userTable.id)
     .limit(1)
+  console.log(`getUserByEmail/gid`, result)
+  if (!result[0]) {
+    return null
+  }
 
   return { ...result[0], userType: "user" }
 }
 
-export async function getUserByEmail(email: string): Promise<UserViewType> {
+export async function getUserByEmail(
+  email: string,
+): Promise<UserViewType | null> {
   const result = await db
     .selectDistinct({
       ...userInclude,
@@ -534,6 +542,10 @@ export async function getUserByEmail(email: string): Promise<UserViewType> {
     .where(eq(userTable.googleId, email))
     .groupBy(userTable.id)
     .limit(1)
+  console.log(`getUserByEmail/gid`, result)
+  if (!result[0]) {
+    return null
+  }
 
   return { ...result[0], userType: "user" }
 }
@@ -621,17 +633,6 @@ export async function updateUserAvatar(userId: string, avatarUrl: string) {
 
   return updatedAvatar[0]["avatarUrl"]
 }
-
-export async function updateAgentAvatar(agentId: string, avatarUrl: string) {
-  const updatedAvatar = await db
-    .update(agentsTable)
-    .set({ avatarUrl })
-    .where(eq(agentsTable.id, agentId))
-    .returning({ avatarUrl: agentsTable.avatarUrl })
-
-  return updatedAvatar[0]["avatarUrl"]
-}
-
 export async function updateUserDisplayInfo({
   displayName,
   bio,
@@ -690,7 +691,7 @@ export async function createPost({
     const data = await db.transaction(async (tx) => {
       const post = await tx
         .insert(postTable)
-        .values({ content, userId, type: "user" })
+        .values({ content, userId, type: "user", agentId: null })
         .returning()
 
       const postId = post[0].id

@@ -2,7 +2,7 @@ import { validateRequest } from "@/auth"
 import { getPostById } from "@/schema/db-fns"
 import { CommentMeta } from "@/types"
 import { NextRequest, NextResponse } from "next/server"
-import { getCommentsCount, getReplyCount } from "@/schema/comment-fns"
+import { getReplyCount } from "@/schema/comment-fns"
 
 export async function GET(
   req: NextRequest,
@@ -24,10 +24,6 @@ export async function GET(
     }
 
     const replyCount = await getReplyCount(postId, commentId)
-
-    console.log({
-      replyCount,
-    })
 
     return NextResponse.json<CommentMeta>({
       commentCount: replyCount,

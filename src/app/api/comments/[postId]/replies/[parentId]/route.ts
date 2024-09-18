@@ -32,8 +32,6 @@ export async function GET(
       perPage,
     )
 
-    console.log(paginatedReplies)
-
     return NextResponse.json(paginatedReplies)
   } catch (error) {
     console.error(error)

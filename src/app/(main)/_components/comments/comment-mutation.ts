@@ -14,8 +14,6 @@ import {
 export function useOnCommentSubmit(postId: string) {
   const { toast } = useToast()
 
-  const { user } = useSession()
-
   const queryClient = useQueryClient()
 
   const mutation = useMutation({
@@ -41,6 +39,7 @@ export function useOnCommentSubmit(postId: string) {
               ],
             }
           }
+          return oldData
         },
       )
 
