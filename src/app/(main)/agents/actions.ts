@@ -10,7 +10,7 @@ import {
 } from "@/schema/agent-fns"
 import { generateIdFromEntropySize } from "lucia"
 import { utApi } from "@/app/api/ut/core"
-import { updateAgentAvatar } from "@/schema/db-fns"
+import { updateAgentAvatar } from "@/schema/agent-fns"
 
 export async function createAgentAction(data: AgentConfigInput) {
   try {

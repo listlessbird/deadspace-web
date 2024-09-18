@@ -2,7 +2,7 @@
 
 import { validateRequest } from "@/auth"
 import { createCommentSchema } from "@/lib/validations"
-import { insertComment } from "@/schema/comment-fns"
+import { insertUserComment } from "@/schema/comment-fns"
 import { getPostById } from "@/schema/db-fns"
 import { createPostCommentNotification } from "@/schema/notification-fns"
 import { CommentsPage } from "@/types"
@@ -24,17 +24,19 @@ export async function createCommentAction({
 
   const { content: parsedContent } = createCommentSchema.parse({ content })
 
-  const newComment = await insertComment(parsedContent, user.id, postId).then(
-    (res) => {
-      createPostCommentNotification(postId, user)
-      return res
-    },
-  )
+  const newComment = await insertUserComment(
+    parsedContent,
+    user.id,
+    postId,
+  ).then((res) => {
+    createPostCommentNotification(postId, user)
+    return res
+  })
   const data = {
     ...newComment,
     username: user.username,
-    displayName: user.displayName as string | null,
-    avatarUrl: user.avatarUrl as string | null,
+    displayName: user.displayName!,
+    avatarUrl: user.avatarUrl!,
     postId: postId,
     replyCount: 0,
     parentId: null,

@@ -1,5 +1,7 @@
 import { db } from "@/db"
+import { EditAgentProfileInput } from "@/lib/validations"
 import { agentsTable } from "@/schema"
+import { agentInclude } from "@/schema/db-fns"
 import { and, desc, eq, lt, sql } from "drizzle-orm"
 
 export async function createAgentInDb({
@@ -60,7 +62,7 @@ export async function getAgents(
       id: agentsTable.id,
       name: agentsTable.name,
       description: agentsTable.description,
-      // behaviourTags: agentsTable.behaviourTags,
+      behaviourTags: agentsTable.behaviourTags,
       avatarUrl: agentsTable.avatarUrl,
       createdBy: agentsTable.createdBy,
       createdAt: agentsTable.createdAt,
@@ -92,7 +94,6 @@ export async function getAllAgentCount() {
           from ${agentsTable}
         `.mapWith(Number),
   )
-  console.log(agentCount)
   return agentCount[0]["agent_count"] as number
 }
 
@@ -106,4 +107,43 @@ export async function getAgentCountByUser(userId: string) {
   )
 
   return agentCount[0]["agent_count"] as number
+}
+
+export async function updateAgentInfo({
+  description,
+  agentId,
+  behaviouralTraits,
+}: EditAgentProfileInput & { agentId: string }) {
+  const updatedAgent = await db
+    .update(agentsTable)
+    .set({ description, behaviourTags: behaviouralTraits })
+    .where(eq(agentsTable.id, agentId))
+    .returning(agentInclude)
+
+  return updatedAgent[0]
+}
+
+export async function agentCreatedByUser(userId: string, agentId: string) {
+  const agent = await db.execute(
+    sql<{ agent_exists: boolean }>`
+          select exists(
+              select 1
+              from ${agentsTable}
+              where ${agentsTable.createdBy} = ${userId}
+              and ${agentsTable.id} = ${agentId}
+          ) as agent_exists
+        `.mapWith(Boolean),
+  )
+  console.log(agent)
+  return agent[0]["agent_exists"] as boolean
+}
+
+export async function updateAgentAvatar(agentId: string, avatarUrl: string) {
+  const updatedAvatar = await db
+    .update(agentsTable)
+    .set({ avatarUrl })
+    .where(eq(agentsTable.id, agentId))
+    .returning({ avatarUrl: agentsTable.avatarUrl })
+
+  return updatedAvatar[0]["avatarUrl"]
 }

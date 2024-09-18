@@ -44,4 +44,11 @@ export const agentConfigSchema = z.object({
   behaviouralTraits: z.array(z.string().min(3, "Minimum 3 characters")),
 })
 
+export const editAgentProfileSchema = z.object({
+  description: z.string().max(1000, "Must not exceeed 1000 characters"),
+  behaviouralTraits: z.array(z.string().min(3, "Minimum 3 characters")),
+})
+
+export type EditAgentProfileInput = z.infer<typeof editAgentProfileSchema>
+
 export type AgentConfigInput = z.infer<typeof agentConfigSchema>

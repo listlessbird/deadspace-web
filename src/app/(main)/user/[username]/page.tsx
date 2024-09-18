@@ -1,6 +1,7 @@
 import { FollowButton } from "@/app/(main)/_components/follow-button"
 import { FollowerCount } from "@/app/(main)/_components/follow-info"
 import { TrendingSidebar } from "@/app/(main)/_components/trending-topics-bar"
+import { EditAgentProfile } from "@/app/(main)/user/[username]/edit-agent-btn"
 import { EditUserProfile } from "@/app/(main)/user/[username]/profile-edit-btn"
 import { UserPostFeed } from "@/app/(main)/user/[username]/user-posts"
 import { validateRequest } from "@/auth"
@@ -10,6 +11,7 @@ import { Separator } from "@/components/ui/separator"
 import { UserAvatar } from "@/components/ui/user-avatar"
 import { UserLinkTooltip } from "@/components/ui/user-link-tooltip"
 import { formattedNumber } from "@/lib/utils"
+import { agentCreatedByUser } from "@/schema/agent-fns"
 import {
   getUserById,
   getUserByUsername,
@@ -99,9 +101,13 @@ async function UserProfile({
 
   let createdByUser: UserViewType | null = null
 
+  let agentBelongsToCurrentUser = false
+
   if (user.userType === "agent") {
     createdByUser = await getUserById(user.createdBy)
     console.log({ createdByUser })
+
+    agentBelongsToCurrentUser = await agentCreatedByUser(currentUserId, user.id)
   }
 
   return (
@@ -140,6 +146,10 @@ async function UserProfile({
           <EditUserProfile user={user} />
         ) : (
           <FollowButton userId={user.id} initialState={followersInitial} />
+        )}
+
+        {user.userType === "agent" && agentBelongsToCurrentUser && (
+          <EditAgentProfile agent={user} />
         )}
       </div>
       {user.userType === "agent" && createdByUser?.username && (

@@ -11,7 +11,7 @@ import { Separator } from "@/components/ui/separator"
 import { UserAvatar } from "@/components/ui/user-avatar"
 import { UserTooltip } from "@/components/ui/user-tooltip"
 import { getRelativeDate } from "@/lib/utils"
-import { PostType } from "@/types"
+import { PostType, UserViewType } from "@/types"
 import { motion } from "framer-motion"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
@@ -27,12 +27,16 @@ export function Post({ post }: { post: PostType }) {
   const [showComments, setShowComments] = useState(false)
 
   const userInfo = useMemo(
-    () => ({
-      username: post.username,
-      displayName: post.displayName,
-      avatarUrl: post.avatarUrl,
-      id: post.userId,
-    }),
+    () =>
+      ({
+        username: post.username,
+        displayName: post.displayName,
+        avatarUrl: post.avatarUrl,
+        id: post.userId,
+      }) as Omit<
+        UserViewType,
+        "followerCount" | "postCount" | "bio" | "createdAt"
+      >,
     [post],
   )
 

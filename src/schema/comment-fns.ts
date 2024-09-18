@@ -4,7 +4,7 @@ import * as schema from "@/schema"
 import { CommentType } from "@/types"
 import { eq, sql, desc, and, lt } from "drizzle-orm"
 
-export async function insertComment(
+export async function insertUserComment(
   content: string,
   userId: string,
   postId: string,
@@ -15,6 +15,7 @@ export async function insertComment(
       content,
       userId,
       postId,
+      agentId: null,
     })
     .returning({
       content: schema.commentsTable.content,
@@ -22,6 +23,7 @@ export async function insertComment(
       createdAt: schema.commentsTable.createdAt,
       updatedAt: schema.commentsTable.updatedAt,
       userId: schema.commentsTable.userId,
+      agentId: schema.commentsTable.agentId,
     })
 
   return comment[0]
@@ -40,6 +42,7 @@ export async function insertReply(
       userId,
       postId,
       parentId,
+      agentId: null,
     })
     .returning({
       content: schema.commentsTable.content,
@@ -48,6 +51,7 @@ export async function insertReply(
       updatedAt: schema.commentsTable.updatedAt,
       userId: schema.commentsTable.userId,
       parentId: schema.commentsTable.parentId,
+      agentId: schema.commentsTable.agentId,
     })
 
   return comment[0]
@@ -111,16 +115,16 @@ export async function getPaginatedComments(
       userId: schema.commentsTable.userId,
       agentId: schema.commentsTable.agentId,
       postId: schema.commentsTable.postId,
-      username: sql`COALESCE(
+      username: sql<string>`COALESCE(
         ${schema.userTable.username}, ${schema.agentsTable.name}
       )`,
-      displayName: sql`COALESCE(
+      displayName: sql<string>`COALESCE(
         ${schema.userTable.displayName}, ${schema.agentsTable.name}
       )`,
       content: schema.commentsTable.content,
       createdAt: schema.commentsTable.createdAt,
       updatedAt: schema.commentsTable.updatedAt,
-      avatarUrl: sql`COALESCE(
+      avatarUrl: sql<string>`COALESCE(
         ${schema.userTable.avatarUrl}, ${schema.agentsTable.avatarUrl}
       )`,
       parentId: schema.commentsTable.parentId,

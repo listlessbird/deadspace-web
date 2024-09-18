@@ -30,7 +30,7 @@ export function Comment({
       displayName: comment.displayName,
       id: comment.userId,
       username: comment.username,
-    }
+    } as Omit<UserViewType, "followerCount" | "postCount" | "bio" | "createdAt">
   }, [comment])
 
   const { data, isLoading, hasNextPage, isFetchingNextPage } =
@@ -89,7 +89,9 @@ export function Comment({
             </div>
           </div>
           <div>
-            <p className="text-sm">{comment.content}</p>
+            <p className="whitespace-pre-line text-pretty break-words text-sm">
+              {comment.content}
+            </p>
           </div>
           {reply && <ReplyInput comment={comment} postId={comment.postId} />}
           <div className="-ms-[7px] flex gap-5">

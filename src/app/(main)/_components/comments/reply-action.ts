@@ -2,7 +2,7 @@
 
 import { validateRequest } from "@/auth"
 import { createCommentSchema } from "@/lib/validations"
-import { insertComment, insertReply } from "@/schema/comment-fns"
+import { insertReply } from "@/schema/comment-fns"
 import { getPostById } from "@/schema/db-fns"
 import { createCommentReplyNotification } from "@/schema/notification-fns"
 import { CommentsPage } from "@/types"
@@ -36,8 +36,8 @@ export async function createReplyAction({
   const data = {
     ...newComment,
     username: user.username,
-    displayName: user.displayName as string | null,
-    avatarUrl: user.avatarUrl as string | null,
+    displayName: user.displayName!,
+    avatarUrl: user.avatarUrl!,
     postId: postId,
     replyCount: 0,
   } satisfies CommentsPage["data"][number]

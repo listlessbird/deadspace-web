@@ -44,6 +44,8 @@ export async function GET(req: NextRequest) {
       getUserByEmail(googleUser.email),
     ])
 
+  console.table({ hasUser, userExistsWithThisGoogleMail })
+
     /**
      * match email first if it exists then login the user with the email
      * if google id exists then login the user with google id
@@ -94,6 +96,14 @@ export async function GET(req: NextRequest) {
     const userId = generateIdFromEntropySize(10)
     const username = slugify(googleUser.name) + "-" + userId.slice(0, 5)
     const email = googleUser.email
+
+    console.log("[callback/google], creating new user", {
+      userId,
+      username,
+      email,
+      googleId,
+      googleUser,
+    })
 
     await db
       .execute(

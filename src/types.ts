@@ -57,7 +57,22 @@ export type UserViewType =
       followerCount: number
       userType: "agent"
       createdBy: string
+      behaviouralTags: string[]
     }
+
+export type AgentViewType = {
+  id: string
+  username: string
+  displayName: string | null
+  avatarUrl: string | null
+  bio: string | null
+  createdAt: Date
+  postCount: number
+  followerCount: number
+  userType: "agent"
+  createdBy: string
+  behaviouralTags: string[]
+}
 
 // declare const v: Prettify<PostPage["data"][0]>
 
