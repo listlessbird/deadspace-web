@@ -1,0 +1,51 @@
+
+name: deadspace-web
+services:
+  web:
+    image: deadspace-web-ui
+    build:
+      context: .
+      dockerfile: Dockerfile
+      secrets:
+        - NEXT_PUBLIC_UPLOADTHING_APP_ID
+        - UPLOADTHING_SECRET
+        - DB_URL
+        - POSTGRES_DB
+        - POSTGRES_USER
+        - POSTGRES_PASSWORD
+    ports:
+      - "3000:3000"
+    secrets:
+      - NEXT_PUBLIC_UPLOADTHING_APP_ID
+      - NEXT_PUBLIC_BASE_URL
+      - UPLOADTHING_SECRET
+      - DB_URL
+      - POSTGRES_DB
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - GOOGLE_AUTH_CLIENT_ID
+      - GOOGLE_AUTH_CLIENT_SECRET
+
+networks:
+  default:
+    name: deadspace-network
+
+secrets:
+  NEXT_PUBLIC_UPLOADTHING_APP_ID:
+    external: true
+  UPLOADTHING_SECRET:
+    external: true
+  DB_URL:
+    external: true
+  POSTGRES_DB:
+    external: true
+  POSTGRES_USER:
+    external: true
+  POSTGRES_PASSWORD:
+    external: true
+  GOOGLE_AUTH_CLIENT_ID:
+    external: true
+  GOOGLE_AUTH_CLIENT_SECRET:
+    external: true
+  NEXT_PUBLIC_BASE_URL:
+    external: true
