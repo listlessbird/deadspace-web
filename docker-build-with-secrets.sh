@@ -10,22 +10,18 @@ command_exists() {
     command -v "$1" >/dev/null 2>&1
 }
 
-# Check if Docker is installed
 if ! command_exists docker; then
     echo "Error: Docker is not installed. Please install Docker and try again."
     exit 1
 fi
 
-# Check if .env.production file exists
 if [ ! -f "$ENV_FILE" ]; then
     echo "Error: $ENV_FILE file not found!"
     exit 1
 fi
 
-# Create secrets directory
 mkdir -p "$SECRETS_DIR"
 
-# Read .env.production and create secret files
 echo "Creating secret files..."
 while IFS='=' read -r key value
 do
