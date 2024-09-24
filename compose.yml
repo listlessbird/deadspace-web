@@ -41,13 +41,14 @@ services:
       - "3000:3000"
     secrets:
       - NEXT_PUBLIC_UPLOADTHING_APP_ID
+      - NEXT_PUBLIC_BASE_URL
       - UPLOADTHING_SECRET
       - DB_URL
       - POSTGRES_DB
       - POSTGRES_USER
       - POSTGRES_PASSWORD
-    depends_on:
-      - postgres
+      - GOOGLE_AUTH_CLIENT_ID
+      - GOOGLE_AUTH_CLIENT_SECRET
 
 volumes:
   pg_data:
@@ -65,6 +66,12 @@ secrets:
     file: ./secrets/POSTGRES_USER
   POSTGRES_PASSWORD:
     file: ./secrets/POSTGRES_PASSWORD
+  GOOGLE_AUTH_CLIENT_ID:
+    file: ./secrets/GOOGLE_AUTH_CLIENT_ID
+  GOOGLE_AUTH_CLIENT_SECRET:
+    file: ./secrets/GOOGLE_AUTH_CLIENT_SECRET
+  NEXT_PUBLIC_BASE_URL:
+    file: ./secrets/NEXT_PUBLIC_BASE_URL
 
 networks:
   default:
