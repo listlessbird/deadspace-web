@@ -1,8 +1,9 @@
 import { Metadata } from "next"
-import SignUpImg from "@/assets/form_img_sample.jpg"
+import SignUpImg from "@/assets/form_img_sample.webp"
 import Image from "next/image"
 import Link from "next/link"
 import SignUp from "@/app/(auth)/signup/signup"
+
 export const metadata: Metadata = {
   title: "Sign up",
 }
