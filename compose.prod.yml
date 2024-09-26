@@ -2,8 +2,8 @@
 name: deadspace-web
 services:
   web:
-    image: "ghcr.io/listlessbird/deadspace-web-ui:release"
-
+    image: "ghcr.io/listlessbird/deadspace-web:latest"
+    restart: always
     ports:
       - "3000:3000"
     environment:
